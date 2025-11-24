@@ -1,6 +1,7 @@
 import pygame
 #from clases.enemy import Enemy
 #from clases.platform import Platform
+from clases.terrain import Terrain
 import random
 
 class Level:
@@ -18,11 +19,20 @@ class Level:
             for j in range(screen.height // height + 1):
                 pos = (i * width, j * width)
                 self.tiles.append(pos)
+        
+        floor_pos = 96
+        self.floor = [Terrain(i * 32, screen.height - 32, 32, floor_pos + 16) for i in range(-screen.width // 32, (screen.width * 2) // 32)]
+        self.floor[0] = Terrain(0, screen.height - 32, 32, floor_pos)
+        #self.floor[-2] = Terrain(0, screen.height - 32, 32, floor_pos + 32)
+
+        # 19 tile width, 13 tile height
 
     def startGame(self, width, height):
         self.player.rect.x = 0
-        self.player.rect.y = height - self.player.rect.height
-    #     # Add all objects
+        self.player.rect.y = height - self.player.rect.height - self.floor[0].rect.height
+        for floor_obj in self.floor:
+            self.platform_list.add(floor_obj)
+    #     # Add all floor
     #     for i in range(5):
     #         block = Enemy((255, 0, 0), 60, 60)
 
@@ -61,6 +71,8 @@ class Level:
         screen.fill((0, 0, 0))
         for tile in self.tiles:
             screen.blit(self.background, tile)
+        for obj in self.floor:
+            obj.draw(screen)
     #     self.enemy_list.draw(screen)
     #     self.platform_list.draw(screen)
         self.all_sprites.draw(screen)

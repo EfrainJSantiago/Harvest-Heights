@@ -28,6 +28,8 @@ levels = [Level(screen, player, "Blue"), Level(screen, player, "Yellow"), Level(
 current_level_no = 0
 current_level = levels[current_level_no]
 
+player.level = current_level
+
 current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
 
 while True:
@@ -39,6 +41,8 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 quit()
+
+    current_level.player.move()
 
     current_level.draw(screen)
 
