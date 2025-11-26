@@ -7,6 +7,12 @@ from clases.player import Player
 from clases.level import Level
 from clases.start_screen import Start
 
+import levels.flat as Flat
+flat = [Flat.terrain_pos, Flat.terrain_extra_pos, Flat.solids_pos, Flat.player_start,
+		Flat.tile_multiplier, Flat.tile_size, Flat.background_color, Flat.border1,
+		Flat.border1_extras, Flat.border2, Flat.border2_extras, Flat.scene_terrain,
+		Flat.scene_collectables]
+
 pygame.init()
 
 mainClock = pygame.time.Clock()
@@ -50,6 +56,7 @@ while not done:
 				quit()
 
 	screen.fill((0, 0, 0))
+	start_screen.update()
 	start_screen.draw(screen)
 
 	mainClock.tick(60)

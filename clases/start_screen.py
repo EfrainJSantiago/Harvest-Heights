@@ -1,11 +1,13 @@
 import pygame
 from clases.terrain import Terrain
 from clases.player import Player
+from clases.fruits import Fruits
 
 terrain_pos = (96, 0)
+terrain_extra_pos = (144, 0)
+solids_pos = (192, 0)
+player_start = (112, 16)
 tile_multiplier = 16
-ROWS = 19
-COLS = 13
 tile_size = 32
 
 scene_terrain = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -17,83 +19,130 @@ scene_terrain = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3],
-                [1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 6],
-                [4, 5, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 5, 6],
-                [4, 5, 5, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 5, 5, 6],
+                [1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 6],
+                [4, 5, 12, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 13, 5, 6],
+                [4, 5, 5, 12, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 13, 5, 5, 5, 6],
                 [4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6],]
+
+fruit_pos = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],]
 
 class Start:
     def __init__(self, screen):
-        #self.terrain = pygame.image.load("assets/Terrain/Terrain (16x16).png").convert()
+        self.collectables = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
+        self.platform_list = pygame.sprite.Group()
         self.background = pygame.image.load("assets/Background/Blue.png").convert()
         _, _, width, height = self.background.get_rect()
-        self.terrain = []
+        #self.terrain = []
         self.tiles = []
-        #self.player = Player(screen.get_size())
 
         for i in range(screen.width // width + 1):
             for j in range(screen.height // height + 1):
                 pos = (i * width, j * height)
                 self.tiles.append(pos)
 
-        # row = 0
-        # col = 0
-
-        # for i in range(-screen.width // tile_size, (screen.width * 2) // tile_size):
-        #     for j in range(-screen.height // tile_size, (screen.height * 2) // tile_size):
-        #         if scene_terrain[row][col] == 0:
-        #             continue
-        #         elif scene_terrain[row][col] == 1:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 0), terrain_pos[1] + (tile_multiplier * 0)))
-        #         elif scene_terrain[row][col] == 2:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 1), terrain_pos[1] + (tile_multiplier * 0)))
-        #         elif scene_terrain[row][col] == 3:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 2), terrain_pos[1] + (tile_multiplier * 0)))
-        #         elif scene_terrain[row][col] == 4:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 0), terrain_pos[1] + (tile_multiplier * 1)))
-        #         elif scene_terrain[row][col] == 5:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 1), terrain_pos[1] + (tile_multiplier * 1)))
-        #         elif scene_terrain[row][col] == 6:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 2), terrain_pos[1] + (tile_multiplier * 1)))
-        #         elif scene_terrain[row][col] == 7:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 0), terrain_pos[1] + (tile_multiplier * 2)))
-        #         elif scene_terrain[row][col] == 8:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 1), terrain_pos[1] + (tile_multiplier * 2)))
-        #         elif scene_terrain[row][col] == 9:
-        #             self.terrain.append(Terrain(i * tile_size, j * tile_size, tile_size, terrain_pos[0] + (tile_multiplier * 2), terrain_pos[1] + (tile_multiplier * 2)))
-        #         col += 1
-        #     col = 0
-        #     row += 1
         for row in range(len(scene_terrain)):
             for col in range(len(scene_terrain[row])):
                 tile_id = scene_terrain[row][col]
                 if tile_id == 0:
                     continue
                 
-                world_x = col * tile_size
-                world_y = row * tile_size
-                
-                tile_offset_x = terrain_pos[0] + tile_multiplier * ((tile_id - 1) % 3)
-                tile_offset_y = terrain_pos[1] + tile_multiplier * ((tile_id - 1) // 3)
-                
-                self.terrain.append(
-                    Terrain(world_x, world_y, tile_size, tile_offset_x, tile_offset_y)
-                )
+                pos_x = col * tile_size
+                pos_y = row * tile_size
 
-        #self.all_sprites.add(self.player)
+                tile_offset_x, tile_offset_y = self.getTilePosition(tile_id)
+
+                # tile_offset_x = terrain_pos[0] + tile_multiplier * ((tile_id - 1) % 3)
+                # tile_offset_y = terrain_pos[1] + tile_multiplier * ((tile_id - 1) // 3)
+                
+                # self.terrain.append(
+                #     Terrain(pos_x, pos_y, tile_size, tile_offset_x, tile_offset_y)
+                # )
+                terrain = Terrain(pos_x, pos_y, tile_size, tile_offset_x, tile_offset_y)
+                self.platform_list.add(terrain)
+                self.all_sprites.add(terrain)
+        
+        for row in range(len(fruit_pos)):
+            for col in range(len(fruit_pos[row])):
+                tile_id = fruit_pos[row][col]
+                if tile_id == 0:
+                    continue
+                
+                fruit = Fruits('Apple')
+                
+                fruit.rect.x = (col * tile_size) - (fruit.rect.width//4)
+                fruit.rect.y = (row * tile_size) - (fruit.rect.height//4)
+
+                self.collectables.add(fruit)
+                self.all_sprites.add(fruit)
+    
+    def getTilePosition(self, tile_id):
+        tile_offset_x = tile_offset_y = 0
+        match tile_id:
+            case 1:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 0)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 0)
+            case 2:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 1)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 0)
+            case 3:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 2)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 0)
+            case 4:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 0)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 1)
+            case 5:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 1)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 1)
+            case 6:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 2)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 1)
+            case 7:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 0)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 2)
+            case 8:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 1)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 2)
+            case 9:
+                tile_offset_x = terrain_pos[0] + (tile_multiplier * 2)
+                tile_offset_y = terrain_pos[1] + (tile_multiplier * 2)
+            case 10:
+                tile_offset_x = terrain_extra_pos[0] + (tile_multiplier * 0)
+                tile_offset_y = terrain_extra_pos[1] + (tile_multiplier * 0)
+            case 11:
+                tile_offset_x = terrain_extra_pos[0] + (tile_multiplier * 1)
+                tile_offset_y = terrain_extra_pos[1] + (tile_multiplier * 0)
+            case 12:
+                tile_offset_x = terrain_extra_pos[0] + (tile_multiplier * 0)
+                tile_offset_y = terrain_extra_pos[1] + (tile_multiplier * 1)
+            case 13:
+                tile_offset_x = terrain_extra_pos[0] + (tile_multiplier * 1)
+                tile_offset_y = terrain_extra_pos[1] + (tile_multiplier * 1)
+        return tile_offset_x, tile_offset_y
     
     def draw(self, screen):
         screen.fill((0, 0, 0))
         for tile in self.tiles:
             screen.blit(self.background, tile)
-        for tile in self.terrain:
-            tile.draw(screen)
-        #self.all_sprites.draw(screen)
+        #self.platform_list.draw(screen)
+        self.all_sprites.draw(screen)
+    
+    def update(self):
+        self.all_sprites.update()
     
     def clear(self):
         self.tiles.clear()
-        for tile in self.terrain:
-            tile.kill()
-        self.terrain.clear()
-        #self.all_sprites.clear()
+        #self.platform_list.empty()
+        self.all_sprites.empty()

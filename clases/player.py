@@ -77,29 +77,11 @@ class Player(pygame.sprite.Sprite):
                 self.image_key = "Fall"
             else:
                 self.image_key = "Idle"
-            #if self.facingLeft == True:
-                #self.image = pygame.transform.flip(self.img_idle, True, False)
-            #else:
-                #self.image = self.img_idle
-        # if keys[pygame.K_UP]:
-        #     self.rect.y -= self.change_y
-        # if keys[pygame.K_DOWN]:
-        #     self.rect.y += self.change_y
         if keys[pygame.K_SPACE]:
-            #self.jump()
-            if not self.jumping and not self.falling:
-                self.jumping = True
-                self.image_key = "Jump"
-                self.tick = 0
-            if self.falling:
-                self.image_key = "Fall"
+            self.jump()
 
     def update(self):
         """ Move the player. """
-        #if self.facingLeft:
-            #self.image = pygame.transform.flip(self.image, True, False)
-        # Gravity
-        #self.calc_grav()
 
         # Animation
         sprite_sheet_name = self.image_key
@@ -150,33 +132,25 @@ class Player(pygame.sprite.Sprite):
                 self.rect.top = block.rect.bottom
 
             # Stop our vertical movement
-            #self.change_y = 0
             self.jumping = False
             self.falling = False
             self.change_y = self.jumpSpeed
 
-    # def calc_grav(self):
-    #     """ Calculate effect of gravity. """
-    #     if self.change_y == 0:
-    #         self.change_y = 1
-    #     else:
-    #         self.change_y += .35
+    def jump(self):
+        """ Called when user hits 'jump' button. """
 
-    #     # See if we are on the ground.
-    #     if self.rect.y >= self.screenH - self.rect.height and self.change_y >= 0:
-    #         self.change_y = 0
-    #         self.rect.y = self.screenH - self.rect.height
+        # move down a bit and see if there is a platform below us.
+        # Move down 2 pixels because it doesn't work well if we only move down
+        # 1 when working with a platform moving down.
+        self.rect.y += 2
+        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        self.rect.y -= 2
 
-    # def jump(self):
-    #     """ Called when user hits 'jump' button. """
-
-    #     # move down a bit and see if there is a platform below us.
-    #     # Move down 2 pixels because it doesn't work well if we only move down
-    #     # 1 when working with a platform moving down.
-    #     self.rect.y += 2
-    #     platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
-    #     self.rect.y -= 2
-
-    #     # If it is ok to jump, set our speed upwards
-    #     if len(platform_hit_list) > 0 or self.rect.bottom >= self.screenH:
-    #         self.change_y = -15
+        # If it is ok to jump, set our speed upwards
+        if len(platform_hit_list) > 0 or self.rect.bottom >= self.screenH:
+            if not self.jumping and not self.falling:
+                self.jumping = True
+                self.image_key = "Jump"
+                self.tick = 0
+            if self.falling:
+                self.image_key = "Fall"
