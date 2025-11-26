@@ -5,14 +5,15 @@ import pygame
 #from clases.enemy import Enemy
 from clases.player import Player
 from clases.level import Level
+from clases.start_screen import Start
 
 pygame.init()
 
 mainClock = pygame.time.Clock()
 
 # Window
-WINDOWWIDTH = 600
-WINDOWHEIGHT = 400
+WINDOWWIDTH = 608
+WINDOWHEIGHT = 416
 screen = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT), 0, 32)
 pygame.display.set_caption("Harvest Heights")
 
@@ -32,19 +33,43 @@ player.level = current_level
 
 current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
 
+# OTHER VARS
+done = False
+
+start_screen = Start(screen)
+
+while not done:
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			done = True
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			pass
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_ESCAPE:
+				pygame.quit()
+				quit()
+
+	screen.fill((0, 0, 0))
+	start_screen.draw(screen)
+
+	mainClock.tick(60)
+	pygame.display.flip()
+
+start_screen.clear()
+
 while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                pygame.quit()
-                quit()
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			pygame.quit()
+			quit()
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_ESCAPE:
+				pygame.quit()
+				quit()
 
-    current_level.player.move()
+	current_level.player.move()
 
-    current_level.draw(screen)
+	current_level.draw(screen)
 
-    mainClock.tick(FPS)
-    pygame.display.flip()
+	mainClock.tick(FPS)
+	pygame.display.flip()
