@@ -2,37 +2,41 @@ import pygame
 #from clases.enemy import Enemy
 #from clases.platform import Platform
 from clases.terrain import Terrain
+from clases.scene import Scene
+from clases.player import Player
 import random
 
 class Level:
-    def __init__(self, screen, player, background):
+    def __init__(self, screen, player, scenes):
         self.enemy_list = pygame.sprite.Group()
         self.platform_list = pygame.sprite.Group()
         self.collectables_list = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
         self.player = player
-        self.terrain = pygame.image.load("assets/Terrain/Terrain (16x16).png").convert()
-        self.background = pygame.image.load("assets/Background/" + background + ".png").convert()
-        _, _, width, height = self.background.get_rect()
-        self.tiles = []
+        self.scenes = []
+        self.current_scene_num = 0
+        self.current_scene = None
+        self.num_scenes = len(scenes)
+        self.respawn_point = None
+        self.end_point = None
+        self.start_point = None
 
-        for i in range(screen.width // width + 1):
-            for j in range(screen.height // height + 1):
-                pos = (i * width, j * width)
-                self.tiles.append(pos)
-        
-        floor_pos = 96
-        self.floor = [Terrain(i * 32, screen.height - 32, 32, floor_pos + 16, 0) for i in range(-screen.width // 32, (screen.width * 2) // 32)]
-        self.floor[0] = Terrain(0, screen.height - 32, 32, floor_pos, 0)
-        #self.floor[len(self.floor) - 1] = Terrain(0, screen.height - 32, 32, floor_pos + 32)
+        for scene in scenes:
+            self.scenes.append(Scene(scene))
 
         # 19 tile width, 13 tile height
 
-    def startGame(self, width, height):
-        self.player.rect.x = 0
-        self.player.rect.y = height - self.player.rect.height - self.floor[0].rect.height
-        for floor_obj in self.floor:
-            self.platform_list.add(floor_obj)
+    def startGame(self, screen, width, height):
+        self.current_scene = self.scenes[0]
+        self.current_scene.constructScene(screen)
+        self.respawn_point = self.current_scene.respawn_point
+        self.player.rect.x = self.respawn_point[0]
+        self.player.rect.y = self.respawn_point[1] - self.player.rect.height
+        self.player.falling = True
+        self.player.change_y = 0
+        self.platform_list = self.current_scene.getPlatforms()
+        self.collectables_list = self.current_scene.getCollectables()
+        self.all_sprites = self.current_scene.getSprites()
     #     # Add all floor
     #     for i in range(5):
     #         block = Enemy((255, 0, 0), 60, 60)
@@ -70,12 +74,9 @@ class Level:
 
     def draw(self, screen):
         screen.fill((0, 0, 0))
-        for tile in self.tiles:
-            screen.blit(self.background, tile)
-        for obj in self.floor:
-            obj.draw(screen)
+        self.current_scene.update()
     #     self.enemy_list.draw(screen)
-    #     self.platform_list.draw(screen)
+        self.current_scene.draw(screen)
         self.all_sprites.draw(screen)
 
     # def checkFinished(self):

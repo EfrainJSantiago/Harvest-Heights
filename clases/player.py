@@ -42,7 +42,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
 
         # Jumping variables
-        self.change_x = 6
+        self.change_x = 0
+        self.moveSpeed = 6
         self.jumpSpeed = 16
         self.change_y = self.jumpSpeed
         self.gravity = 1
@@ -56,15 +57,18 @@ class Player(pygame.sprite.Sprite):
     def move(self):
         self.update()
         keys = pygame.key.get_pressed()
+        self.change_x = 0
         if keys[pygame.K_LEFT] and self.rect.x > 0:
-            self.rect.x -= self.change_x
+            #self.rect.x -= self.change_x
+            self.change_x = -self.moveSpeed
             if not (self.jumping or self.falling):
                 self.image_key = "Run"
             if not self.facingLeft:
                 self.tick = 0
             self.facingLeft = True
         elif keys[pygame.K_RIGHT] and self.rect.x < self.screenW - self.rect.width:
-            self.rect.x += self.change_x
+            #self.rect.x += self.change_x
+            self.change_x = self.moveSpeed
             if not (self.jumping or self.falling):
                 self.image_key = "Run"
             if self.facingLeft:
@@ -100,6 +104,8 @@ class Player(pygame.sprite.Sprite):
         # Animation End
 
         # See if we hit anything
+        self.rect.x += self.change_x
+
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
             # If we are moving right,
@@ -109,6 +115,8 @@ class Player(pygame.sprite.Sprite):
             elif self.change_x < 0:
                 # Otherwise if we are moving left, do the opposite.
                 self.rect.left = block.rect.right
+        
+        #self.rect.x -= self.change_x
 
         # Move up/down
         if self.jumping or self.falling:
@@ -126,18 +134,33 @@ class Player(pygame.sprite.Sprite):
         for block in block_hit_list:
 
             # Reset our position based on the top/bottom of the object.
-            if self.change_y > 0:
+            if self.change_y < 0:
                 self.rect.bottom = block.rect.top
-            elif self.change_y < 0:
+                self.jumping = False
+                self.falling = False
+                self.change_y = 0
+            elif self.change_y > 0:
                 self.rect.top = block.rect.bottom
+                self.change_y = 0
+            
+            # self.jumping = False
+            # self.falling = False
+            # self.change_y = self.jumpSpeed
+        
+        # --- Check if player walked off a platform ---
+        self.rect.y += 2
+        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        self.rect.y -= 2
 
-            # Stop our vertical movement
-            self.jumping = False
-            self.falling = False
-            self.change_y = self.jumpSpeed
+        if len(platform_hit_list) == 0 and not self.jumping:
+            if not self.falling:
+                self.change_y = 0
+            self.falling = True
 
     def jump(self):
         """ Called when user hits 'jump' button. """
+        if not self.jumping and not self.falling:
+            self.change_y = self.jumpSpeed
 
         # move down a bit and see if there is a platform below us.
         # Move down 2 pixels because it doesn't work well if we only move down

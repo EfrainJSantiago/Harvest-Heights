@@ -4,7 +4,7 @@ import pygame
 
 #from clases.enemy import Enemy
 from clases.player import Player
-from clases.level import Level
+from clases.level2 import Level
 from clases.start_screen import Start
 
 import levels.flat as Flat
@@ -29,13 +29,13 @@ player = Player(WINDOWWIDTH, WINDOWHEIGHT)
 x_speed = 2
 y_speed = 2
 
-levels = [Level(screen, player, "Blue"), Level(screen, player, "Yellow"), Level(screen, player, "Pink")]
+levels = [Level(screen, player, scenes)]
 current_level_no = 0
 current_level = levels[current_level_no]
 
 player.level = current_level
 
-current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
+current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
 
 # OTHER VARS
 done = False
