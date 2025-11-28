@@ -33,6 +33,37 @@ class Player(pygame.sprite.Sprite):
                 flipped_sprites[i] = pygame.transform.flip(flipped_sprites[i], True, False)
             self.all_sprites[image.replace(" (32x32).png", "") + "_left"] = flipped_sprites
 
+        self.appear = True
+        self.disappear = False
+
+        sprite_sheet = pygame.image.load('assets/Main Characters/Appearing (96x96).png').convert_alpha()
+        sprites = []
+        for i in range(sprite_sheet.get_width() // 96):
+            surface = pygame.Surface((96, 96), pygame.SRCALPHA, 32)
+            rect = pygame.Rect(i * 96, 0, 96, 96)
+            surface.blit(sprite_sheet, (0, 0), rect)
+            sprites.append(pygame.transform.scale2x(surface))
+        
+        self.all_sprites["Appearing_right"] = sprites
+        flipped_sprites = sprites[:]
+        for i in range(len(flipped_sprites)):
+            flipped_sprites[i] = pygame.transform.flip(flipped_sprites[i], True, False)
+        self.all_sprites["Appearing_left"] = sprites
+        
+        sprite_sheet = pygame.image.load('assets/Main Characters/Desappearing (96x96).png').convert_alpha()
+        sprites = []
+        for i in range(sprite_sheet.get_width() // 96):
+            surface = pygame.Surface((96, 96), pygame.SRCALPHA, 32)
+            rect = pygame.Rect(i * 96, 0, 96, 96)
+            surface.blit(sprite_sheet, (0, 0), rect)
+            sprites.append(pygame.transform.scale2x(surface))
+        
+        self.all_sprites["Desappearing_right"] = sprites
+        flipped_sprites = sprites[:]
+        for i in range(len(flipped_sprites)):
+            flipped_sprites[i] = pygame.transform.flip(flipped_sprites[i], True, False)
+        self.all_sprites["Desappearing_left"] = sprites
+
         self.image = self.all_sprites["Idle_right"][0]
         self.image_key = "Idle"
         # self.image.fill(color)
@@ -53,9 +84,14 @@ class Player(pygame.sprite.Sprite):
         # Other
         self.level = None
         self.facingLeft = False
+        self.done = False
+        self.spawn_pos = None
+        self.hurt = None
 
     def move(self):
         self.update()
+        if self.appear or self.disappear:
+            return
         keys = pygame.key.get_pressed()
         self.change_x = 0
         if keys[pygame.K_LEFT] and self.rect.x > 0:
@@ -80,12 +116,26 @@ class Player(pygame.sprite.Sprite):
             if self.falling:
                 self.image_key = "Fall"
             else:
-                self.image_key = "Idle"
+                if not (self.appear or self.disappear):
+                    self.image_key = "Idle"
         if keys[pygame.K_SPACE]:
             self.jump()
 
     def update(self):
         """ Move the player. """
+        if self.done and self.disappear:
+            self.kill()
+        if self.done and self.appear:
+            self.appear = False
+            self.done = False
+            self.rect.x = self.spawn_pos[0]
+            self.rect.y = self.spawn_pos[1]
+            self.image_key = "Idle"
+            
+        if self.appear:
+            self.image_key = "Appearing"
+            if not self.spawn_pos:
+                self.spawn_pos = (self.rect.x, self.rect.y)
 
         # Animation
         sprite_sheet_name = self.image_key
@@ -99,9 +149,18 @@ class Player(pygame.sprite.Sprite):
         sprite_index = (self.tick // self.animation_speed) % len(sprites)
         self.image = sprites[sprite_index]
         self.tick += 1
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+        if not (self.appear or self.disappear):
+            self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+        else:
+            self.rect = self.image.get_rect(center=(self.rect.centerx, self.rect.centery))
         self.mask = pygame.mask.from_surface(self.image)
+
+        if (self.disappear or self.appear) and sprite_index == len(sprites) - 1:
+            self.done = True
         # Animation End
+
+        if self.disappear or self.appear:
+            return
 
         # See if we hit anything
         self.rect.x += self.change_x
@@ -115,8 +174,6 @@ class Player(pygame.sprite.Sprite):
             elif self.change_x < 0:
                 # Otherwise if we are moving left, do the opposite.
                 self.rect.left = block.rect.right
-        
-        #self.rect.x -= self.change_x
 
         # Move up/down
         if self.jumping or self.falling:
@@ -142,20 +199,34 @@ class Player(pygame.sprite.Sprite):
             elif self.change_y > 0:
                 self.rect.top = block.rect.bottom
                 self.change_y = 0
-            
-            # self.jumping = False
-            # self.falling = False
-            # self.change_y = self.jumpSpeed
+        
+        # Check and see if we land on a semisolid
+        prev_bottom = self.rect.bottom + self.change_y
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.semisolid_list, False)
+        for block in block_hit_list:
+
+            # Reset our position based on the top/bottom of the object.
+            if self.change_y < 0 and self.rect.bottom >= block.rect.top and prev_bottom <= block.rect.top:
+                self.rect.bottom = block.rect.top
+                self.jumping = False
+                self.falling = False
+                self.change_y = 0
+        
+        # Check and see if we land on the end goal
+        if self.level.end_goal and self.rect.colliderect(self.level.end_goal.rect):
+            self.level.end_goal.trigger()
+            print('End')
         
         # --- Check if player walked off a platform ---
         self.rect.y += 2
-        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False) + pygame.sprite.spritecollide(self, self.level.semisolid_list, False)
         self.rect.y -= 2
 
         if len(platform_hit_list) == 0 and not self.jumping:
             if not self.falling:
                 self.change_y = 0
             self.falling = True
+
 
     def jump(self):
         """ Called when user hits 'jump' button. """
@@ -166,7 +237,7 @@ class Player(pygame.sprite.Sprite):
         # Move down 2 pixels because it doesn't work well if we only move down
         # 1 when working with a platform moving down.
         self.rect.y += 2
-        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False) + pygame.sprite.spritecollide(self, self.level.semisolid_list, False)
         self.rect.y -= 2
 
         # If it is ok to jump, set our speed upwards

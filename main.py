@@ -9,7 +9,8 @@ from clases.start_screen import Start
 
 import levels.flat as Flat
 import levels.test as Test
-scenes = [Test.scene1, Flat.scene1]
+import levels.battlefield as Battlefield
+scenes = [Battlefield.scene1, Test.scene1, Flat.scene1]
 
 pygame.init()
 
@@ -29,13 +30,13 @@ player = Player(WINDOWWIDTH, WINDOWHEIGHT)
 x_speed = 2
 y_speed = 2
 
-levels = [Level(screen, player, "Blue"), Level(screen, player, "Yellow"), Level(screen, player, "Pink")]
+levels = [Level(screen, player, scenes)]
 current_level_no = 0
 current_level = levels[current_level_no]
 
 player.level = current_level
 
-current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
+current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
 
 # OTHER VARS
 done = False
@@ -73,8 +74,20 @@ while True:
 				quit()
 
 	current_level.player.move()
+	current_level.collect()
+	current_level.checkComplete()
 
 	current_level.draw(screen)
+
+	if current_level.checkFinished():
+		print('Complete')
+		# Expand This
+	elif not player.alive() and not current_level.end_goal:
+		# Implement Wait Here
+		player = Player(WINDOWWIDTH, WINDOWHEIGHT)
+		current_level.respawn_player(player)
+		player.level = current_level
+		current_level.progress(screen)
 
 	mainClock.tick(FPS)
 	pygame.display.flip()

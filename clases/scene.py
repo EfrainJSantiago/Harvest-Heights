@@ -10,9 +10,12 @@ class Scene:
         self.collectables_list = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
         self.platform_list = pygame.sprite.Group()
+        self.semisolid_list = pygame.sprite.Group()
         self.terrain_pos = scene_values['terrain_pos']
         self.terrain_extra_pos = scene_values['terrain_extra_pos']
-        self.solid_pos = scene_values['solids_pos']
+        self.decor_pos = scene_values['decor_pos']
+        self.decor_type = scene_values['decor_type']
+        self.semisolid_pos = scene_values['semisolid_pos']
         self.tile_mult = scene_values['tile_multiplier']
         self.tile_size = scene_values['tile_size']
         self.border1 = scene_values['border1']
@@ -22,14 +25,22 @@ class Scene:
         self.background = pygame.image.load("assets/Background/" + scene_values['background_color'] + ".png").convert()
         self.tiles = []
         self.scene_terrain = scene_values['scene_terrain']
+        self.scene_decor = scene_values['scene_decor']
+        self.scene_semisolid = scene_values['scene_semisolid']
         self.scene_collectables = scene_values['scene_collectables']
         self.scene_enemies = scene_values['scene_enemies']
         self.respawn_point = None
 
-        if scene_values['start']:
+        if scene_values['start'] != None:
             self.respawn_point = scene_values['start']
-        elif scene_values['checkpoint']:
+        elif scene_values['checkpoint'] != None:
             self.respawn_point = scene_values['checkpoint']
+        else:
+            self.respawn_point = (32, 96)
+        
+        self.endpoint = None
+        if scene_values['end'] != None:
+            self.endpoint = scene_values['end']
 
         # 19 tile width, 13 tile height
     
@@ -37,11 +48,15 @@ class Scene:
         self.background = pygame.image.load("assets/Background/Blue.png").convert()
         _, _, width, height = self.background.get_rect()
 
+        # Adds background to the scene
         for i in range(screen.width // width + 1):
             for j in range(screen.height // height + 1):
                 pos = (i * width, j * height)
                 self.tiles.append(pos)
+        
+        tile_offset_x, tile_offset_y = 0, 0
 
+        # Adds terrain to the scene
         for row in range(len(self.scene_terrain)):
             for col in range(len(self.scene_terrain[row])):
                 tile_id = self.scene_terrain[row][col]
@@ -51,13 +66,77 @@ class Scene:
                 pos_x = col * self.tile_size
                 pos_y = row * self.tile_size
 
-                tile_offset_x, tile_offset_y = self.getTilePosition(tile_id)
+                if tile_id in range(1, 10):
+                    tile_offset_x, tile_offset_y = self.getTilePosition(self.terrain_pos, tile_id, 3)
+                elif tile_id in range(10, 14):
+                    tile_offset_x, tile_offset_y = self.getTilePosition(self.terrain_extra_pos, tile_id, 2)
 
                 terrain = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
                 
                 self.platform_list.add(terrain)
                 self.all_sprites.add(terrain)
         
+        # Adds decorative blocks to the screen
+        for row in range(len(self.scene_decor)):
+            for col in range(len(self.scene_decor[row])):
+                tile_id = self.scene_decor[row][col]
+                if tile_id == 0:
+                    continue
+
+                decor_pos = list(self.decor_pos)
+
+                match self.decor_type:
+                    case 'brown':
+                        pass
+                    case 'gray':
+                        decor_pos[1] += 64
+                    case 'orange':
+                        decor_pos[1] += 128
+                    case 'gold':
+                        decor_pos[1] += 128
+                        decor_pos[0] += 80
+                    case 'brick':
+                        if tile_id in range(1, 10):
+                            decor_pos[1] += 64
+                            decor_pos[0] += 80
+                        elif tile_id in range(10, 14):
+                            decor_pos[1] += 64
+                            decor_pos[0] += 128
+                
+                pos_x = col * self.tile_size
+                pos_y = row * self.tile_size
+
+                if self.decor_type != 'brick':
+                    tile_offset_x, tile_offset_y = self.getTilePosition(tuple(decor_pos), tile_id, 4)
+                else:
+                    if tile_id in range(1, 10):
+                        tile_offset_x, tile_offset_y = self.getTilePosition(tuple(decor_pos), tile_id, 3)
+                    elif tile_id in range(10, 14):
+                        tile_offset_x, tile_offset_y = self.getTilePosition(tuple(decor_pos), tile_id, 2)
+
+                decor = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
+                
+                self.platform_list.add(decor)
+                self.all_sprites.add(decor)
+
+        # Adds semisolids to the screen
+        for row in range(len(self.scene_semisolid)):
+            for col in range(len(self.scene_semisolid[row])):
+                tile_id = self.scene_semisolid[row][col]
+                if tile_id == 0:
+                    continue
+                
+                pos_x = col * self.tile_size
+                pos_y = row * self.tile_size
+
+                tile_offset_x, tile_offset_y = self.getTilePosition(self.semisolid_pos, tile_id, 3)
+
+                semisolid = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
+                
+                self.semisolid_list.add(semisolid)
+                self.all_sprites.add(semisolid)
+
+        # Adds collectables to the screen
         for row in range(len(self.scene_collectables)):
             for col in range(len(self.scene_collectables[row])):
                 tile_id = self.scene_collectables[row][col]
@@ -71,58 +150,30 @@ class Scene:
 
                 self.collectables_list.add(fruit)
                 self.all_sprites.add(fruit)
-    
+        
     def getCollectables(self):
         return self.collectables_list
     
     def getPlatforms(self):
         return self.platform_list
     
+    def getSemisolids(self):
+        return self.semisolid_list
+    
     def getSprites(self):
         return self.all_sprites.copy()
     
-    def getTilePosition(self, tile_id):
-        tile_offset_x = tile_offset_y = 0
-        match tile_id:
-            case 1:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 0)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 0)
-            case 2:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 1)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 0)
-            case 3:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 2)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 0)
-            case 4:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 0)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 1)
-            case 5:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 1)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 1)
-            case 6:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 2)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 1)
-            case 7:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 0)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 2)
-            case 8:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 1)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 2)
-            case 9:
-                tile_offset_x = self.terrain_pos[0] + (self.tile_mult * 2)
-                tile_offset_y = self.terrain_pos[1] + (self.tile_mult * 2)
-            case 10:
-                tile_offset_x = self.terrain_extra_pos[0] + (self.tile_mult * 0)
-                tile_offset_y = self.terrain_extra_pos[1] + (self.tile_mult * 0)
-            case 11:
-                tile_offset_x = self.terrain_extra_pos[0] + (self.tile_mult * 1)
-                tile_offset_y = self.terrain_extra_pos[1] + (self.tile_mult * 0)
-            case 12:
-                tile_offset_x = self.terrain_extra_pos[0] + (self.tile_mult * 0)
-                tile_offset_y = self.terrain_extra_pos[1] + (self.tile_mult * 1)
-            case 13:
-                tile_offset_x = self.terrain_extra_pos[0] + (self.tile_mult * 1)
-                tile_offset_y = self.terrain_extra_pos[1] + (self.tile_mult * 1)
+    def getEndPoint(self):
+        return self.endpoint
+    
+    def getTilePosition(self, pos: tuple, tile_id, size):
+        if size == 2:
+            tile_offset_x = pos[0] + self.tile_mult * ((tile_id - 10) % size)
+            tile_offset_y = pos[1] + self.tile_mult * ((tile_id - 10) // size)
+        else:
+            tile_offset_x = pos[0] + self.tile_mult * ((tile_id - 1) % size)
+            tile_offset_y = pos[1] + self.tile_mult * ((tile_id - 1) // size)
+
         return tile_offset_x, tile_offset_y
 
     def resetScene(self, scene, scene_terrain, scene_collectables):
