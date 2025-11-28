@@ -1,16 +1,16 @@
 import pygame
 
-
 class Player(pygame.sprite.Sprite):
-    def __init__(self, screenW, screenH):
+    def __init__(self, screenW, screenH, character):
         super().__init__()
         # importar imagen de saltar, caer y idle
-        path = "assets/Main Characters/Ninja Frog/"
+        path = "assets/Main Characters/" + character + '/'
         images = ["Run (32x32).png",
                  "Jump (32x32).png",
                  "Fall (32x32).png",
                  "Idle (32x32).png",
-                 "Fall (32x32).png"]
+                 "Fall (32x32).png",
+                 "Hit (32x32).png",]
         
         self.all_sprites = {}
         self.animation_speed = 3
@@ -86,10 +86,9 @@ class Player(pygame.sprite.Sprite):
         self.facingLeft = False
         self.done = False
         self.spawn_pos = None
-        self.hurt = None
+        self.hurt = False
 
     def move(self):
-        self.update()
         if self.appear or self.disappear:
             return
         keys = pygame.key.get_pressed()
@@ -113,10 +112,10 @@ class Player(pygame.sprite.Sprite):
         else:
             if self.jumping:
                 self.image_key = "Jump"
-            if self.falling:
+            elif self.falling:
                 self.image_key = "Fall"
             else:
-                if not (self.appear or self.disappear):
+                if not (self.appear or self.disappear or self.hurt):
                     self.image_key = "Idle"
         if keys[pygame.K_SPACE]:
             self.jump()
@@ -125,12 +124,22 @@ class Player(pygame.sprite.Sprite):
         """ Move the player. """
         if self.done and self.disappear:
             self.kill()
-        if self.done and self.appear:
+        elif self.done and self.hurt:
+            self.done = False
+            self.despawn()
+        elif self.done and self.appear:
             self.appear = False
             self.done = False
             self.rect.x = self.spawn_pos[0]
             self.rect.y = self.spawn_pos[1]
             self.image_key = "Idle"
+        
+        if self.hurt:
+            if self.facingLeft:
+                self.rect.x += 1
+            else:
+                self.rect.x += -1
+            self.rect.y += -1
             
         if self.appear:
             self.image_key = "Appearing"
@@ -155,11 +164,11 @@ class Player(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center=(self.rect.centerx, self.rect.centery))
         self.mask = pygame.mask.from_surface(self.image)
 
-        if (self.disappear or self.appear) and sprite_index == len(sprites) - 1:
+        if (self.disappear or self.appear or self.hurt) and sprite_index == len(sprites) - 1:
             self.done = True
         # Animation End
 
-        if self.disappear or self.appear:
+        if self.disappear or self.appear or self.hurt:
             return
 
         # See if we hit anything
@@ -215,7 +224,6 @@ class Player(pygame.sprite.Sprite):
         # Check and see if we land on the end goal
         if self.level.end_goal and self.rect.colliderect(self.level.end_goal.rect):
             self.level.end_goal.trigger()
-            print('End')
         
         # --- Check if player walked off a platform ---
         self.rect.y += 2
@@ -226,6 +234,14 @@ class Player(pygame.sprite.Sprite):
             if not self.falling:
                 self.change_y = 0
             self.falling = True
+        
+        if self.rect.bottom >= self.screenH and not self.hurt:
+            self.falling = False
+            self.change_y = 0
+            self.jumping = False
+            self.hurt = True
+            self.image_key = "Hit"
+            self.tick = 0
 
 
     def jump(self):
@@ -248,3 +264,15 @@ class Player(pygame.sprite.Sprite):
                 self.tick = 0
             if self.falling:
                 self.image_key = "Fall"
+        elif self.rect.bottom > self.screenH and not self.hurt:
+            self.falling = False
+            self.change_y = 0
+            self.jumping = False
+            self.hurt = True
+            self.image_key = "Hit"
+            self.tick = 0
+    
+    def despawn(self):
+        self.disappear = True
+        self.tick = 0
+        self.image_key = "Desappearing"

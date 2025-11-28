@@ -2,6 +2,7 @@ import pygame
 #from clases.enemy import Enemy
 from clases.terrain import Terrain
 from clases.fruits import Fruits
+from clases.enemy_types import *
 import random
 
 class Scene:
@@ -11,6 +12,7 @@ class Scene:
         self.all_sprites = pygame.sprite.Group()
         self.platform_list = pygame.sprite.Group()
         self.semisolid_list = pygame.sprite.Group()
+        self.enemy_list = pygame.sprite.Group()
         self.terrain_pos = scene_values['terrain_pos']
         self.terrain_extra_pos = scene_values['terrain_extra_pos']
         self.decor_pos = scene_values['decor_pos']
@@ -19,9 +21,10 @@ class Scene:
         self.tile_mult = scene_values['tile_multiplier']
         self.tile_size = scene_values['tile_size']
         self.border1 = scene_values['border1']
-        self.border1 = scene_values['border1_extras']
+        self.border1_extras = scene_values['border1_extras']
         self.border2 = scene_values['border2']
-        self.border1 = scene_values['border2_extras']
+        self.border2_extras = scene_values['border2_extras']
+        self.enemy_types = scene_values['enemy_types']
         self.background = pygame.image.load("assets/Background/" + scene_values['background_color'] + ".png").convert()
         self.tiles = []
         self.scene_terrain = scene_values['scene_terrain']
@@ -45,7 +48,7 @@ class Scene:
         # 19 tile width, 13 tile height
     
     def constructScene(self, screen):
-        self.background = pygame.image.load("assets/Background/Blue.png").convert()
+        self.tiles.clear()
         _, _, width, height = self.background.get_rect()
 
         # Adds background to the scene
@@ -74,7 +77,7 @@ class Scene:
                 terrain = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
                 
                 self.platform_list.add(terrain)
-                self.all_sprites.add(terrain)
+                #self.all_sprites.add(terrain)
         
         # Adds decorative blocks to the screen
         for row in range(len(self.scene_decor)):
@@ -117,7 +120,7 @@ class Scene:
                 decor = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
                 
                 self.platform_list.add(decor)
-                self.all_sprites.add(decor)
+                #self.all_sprites.add(decor)
 
         # Adds semisolids to the screen
         for row in range(len(self.scene_semisolid)):
@@ -134,7 +137,7 @@ class Scene:
                 semisolid = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
                 
                 self.semisolid_list.add(semisolid)
-                self.all_sprites.add(semisolid)
+                #self.all_sprites.add(semisolid)
 
         # Adds collectables to the screen
         for row in range(len(self.scene_collectables)):
@@ -150,6 +153,35 @@ class Scene:
 
                 self.collectables_list.add(fruit)
                 self.all_sprites.add(fruit)
+
+        width, height = screen.get_size()
+        
+         # Adds enemies to the screen
+        for row in range(len(self.scene_enemies)):
+            for col in range(len(self.scene_enemies[row])):
+                tile_id = self.scene_enemies[row][col]
+                if tile_id == 0:
+                    continue
+
+                enemy = None
+
+                match tile_id:
+                    case 1:
+                        enemy = Trunk(width, height)
+
+                pos_x = col * self.tile_size
+                pos_y = row * self.tile_size
+
+                if pos_x < width // 2:
+                    enemy.facingRight = True
+                
+                self.enemy_list.add(semisolid)
+                
+                enemy.rect.x = pos_x #- fruit.rect.width
+                enemy.rect.y = pos_y - enemy.rect.height
+
+                self.enemy_list.add(enemy)
+                self.all_sprites.add(enemy)
         
     def getCollectables(self):
         return self.collectables_list
@@ -160,11 +192,14 @@ class Scene:
     def getSemisolids(self):
         return self.semisolid_list
     
+    def getEnemies(self):
+        return self.enemy_list
+    
     def getSprites(self):
-        return self.all_sprites.copy()
+        return self.all_sprites
     
     def getEndPoint(self):
-        return self.endpoint
+        return self.endpoint if self.endpoint else (0, 0)
     
     def getTilePosition(self, pos: tuple, tile_id, size):
         if size == 2:
@@ -176,21 +211,12 @@ class Scene:
 
         return tile_offset_x, tile_offset_y
 
-    def resetScene(self, scene, scene_terrain, scene_collectables):
-        self.clear()
-        self.constructScene(scene, scene_terrain, scene_collectables)
-    #     self.player.rect.x = 0
-    #     self.player.rect.y = 0
-    #     self.enemy_list.empty()
-    #     self.all_sprites.empty()
-    #     self.platform_list.empty()
-    #     self.startGame(width, height)
-
     def draw(self, screen):
         screen.fill((0, 0, 0))
         for tile in self.tiles:
             screen.blit(self.background, tile)
-        #self.platform_list.draw(screen)
+        self.platform_list.draw(screen)
+        self.semisolid_list.draw(screen)
         self.all_sprites.draw(screen)
     
     def update(self):
@@ -216,5 +242,7 @@ class Scene:
 
     def clear(self):
         self.tiles.clear()
-        #self.platform_list.empty()
+        self.platform_list.empty()
+        self.semisolid_list.empty()
+        self.collectables_list.empty()
         self.all_sprites.empty()

@@ -14,6 +14,7 @@ class Level:
         self.semisolid_list = pygame.sprite.Group()
         self.collectables_list = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
+        self.scene_values = scenes
         self.player = player
         self.scenes = []
         self.current_scene_num = 0
@@ -24,27 +25,13 @@ class Level:
         self.start_point = None
         self.end_goal = None
 
-        for scene in scenes:
-            self.scenes.append(Scene(scene))
-
         # 19 tile width, 13 tile height
 
     def startGame(self, screen, width, height):
+        for scene in self.scene_values:
+            self.scenes.append(Scene(scene))
+        self.current_scene_num = 0
         self.load_scene(screen)
-        # self.current_scene = self.scenes[0]
-        # self.current_scene.constructScene(screen)
-        # self.respawn_point = self.current_scene.respawn_point
-        # self.player.rect.x = self.respawn_point[0]
-        # self.player.rect.y = self.respawn_point[1] - self.player.rect.height
-        # self.player.falling = True
-        # self.player.change_y = 0
-        # self.platform_list = self.current_scene.getPlatforms()
-        # # for platform in self.platform_list:
-        # #     self.all_sprites.add(platform)
-        # self.collectables_list = self.current_scene.getCollectables()
-        # # for collectable in self.collectables_list:
-        # #     self.all_sprites.add(collectable)
-        # self.all_sprites = self.current_scene.getSprites()
     #     # Add all floor
     #     for i in range(5):
     #         block = Enemy((255, 0, 0), 60, 60)
@@ -72,13 +59,23 @@ class Level:
 
         self.all_sprites.add(self.player)
 
-    # def restartGame(self, width, height):
-    #     self.player.rect.x = 0
-    #     self.player.rect.y = 0
-    #     self.enemy_list.empty()
-    #     self.all_sprites.empty()
-    #     self.platform_list.empty()
-    #     self.startGame(width, height)
+    def restartLevel(self, screen, width, height):
+        self.scenes.clear()
+        self.semisolid_list.empty()
+        self.collectables_list.empty()
+        self.enemy_list.empty()
+        self.platform_list.empty()
+        self.all_sprites.empty()
+        self.startGame(screen, width, height)
+    
+    def resetScene(self, screen):
+        self.player.disappear = False
+        if self.end_goal:
+            self.end_goal.kill()
+            self.end_goal = None
+        self.current_scene.clear()
+        self.load_scene(screen)
+
     def progress(self, screen):
         self.current_scene.clear()
         self.current_scene_num += 1
@@ -96,6 +93,9 @@ class Level:
         self.collectables_list = self.current_scene.getCollectables()
         self.all_sprites = self.current_scene.getSprites()
         self.semisolid_list = self.current_scene.getSemisolids()
+        self.enemy_list = self.current_scene.getEnemies()
+        for enemy in self.enemy_list:
+            enemy.level = self
         self.all_sprites.add(self.player)
 
     def draw(self, screen):
@@ -103,7 +103,6 @@ class Level:
         self.current_scene.update()
         if self.end_goal:
             self.end_goal.update()
-    #     self.enemy_list.draw(screen)
         self.current_scene.draw(screen)
         self.all_sprites.draw(screen)
     
@@ -119,6 +118,7 @@ class Level:
                         self.player.image_key = "Desappearing"
                         self.player.update()
                         return False
+                return False
             else:
                 return False
         else:
@@ -136,7 +136,6 @@ class Level:
                 self.end_goal = Checkpoint("End")
                 self.end_goal.rect.x = self.end_point[0] - self.end_goal.rect.width
                 self.end_goal.rect.y = self.end_point[1] - self.end_goal.rect.height
-                #self.platform_list.add(self.end_goal)
                 self.all_sprites.add(self.end_goal)
                 return False
             return False
