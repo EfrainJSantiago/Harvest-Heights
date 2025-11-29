@@ -89,7 +89,7 @@ class Player(pygame.sprite.Sprite):
         self.hurt = False
 
     def move(self):
-        if self.appear or self.disappear:
+        if self.appear or self.disappear or self.hurt:
             return
         keys = pygame.key.get_pressed()
         self.change_x = 0
@@ -109,6 +109,8 @@ class Player(pygame.sprite.Sprite):
             if self.facingLeft:
                 self.tick = 0
             self.facingLeft = False
+        elif keys[pygame.K_r]:
+            self.level.resetScene(self.level.screen, self.screenW, self.screenH)
         else:
             if self.jumping:
                 self.image_key = "Jump"
@@ -244,7 +246,7 @@ class Player(pygame.sprite.Sprite):
             self.tick = 0
 
 
-    def jump(self):
+    def jump(self, check = True):
         """ Called when user hits 'jump' button. """
         if not self.jumping and not self.falling:
             self.change_y = self.jumpSpeed
@@ -257,7 +259,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.y -= 2
 
         # If it is ok to jump, set our speed upwards
-        if len(platform_hit_list) > 0 or self.rect.bottom >= self.screenH:
+        if len(platform_hit_list) > 0 or self.rect.bottom >= self.screenH and check:
             if not self.jumping and not self.falling:
                 self.jumping = True
                 self.image_key = "Jump"

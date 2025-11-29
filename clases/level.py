@@ -24,14 +24,15 @@ class Level:
         self.end_point = None
         self.start_point = None
         self.end_goal = None
+        self.screen = screen
 
         # 19 tile width, 13 tile height
 
-    def startGame(self, screen, width, height):
+    def startGame(self, screen, screenW, screenH):
         for scene in self.scene_values:
             self.scenes.append(Scene(scene))
         self.current_scene_num = 0
-        self.load_scene(screen)
+        self.load_scene(screen, screenW, screenH)
     #     # Add all floor
     #     for i in range(5):
     #         block = Enemy((255, 0, 0), 60, 60)
@@ -68,22 +69,22 @@ class Level:
         self.all_sprites.empty()
         self.startGame(screen, width, height)
     
-    def resetScene(self, screen):
+    def resetScene(self, screen, screenW, screenH):
         self.player.disappear = False
         if self.end_goal:
             self.end_goal.kill()
             self.end_goal = None
         self.current_scene.clear()
-        self.load_scene(screen)
+        self.load_scene(screen, screenW, screenH)
 
-    def progress(self, screen):
+    def progress(self, screen, screenW, screenH):
         self.current_scene.clear()
         self.current_scene_num += 1
-        self.load_scene(screen)
+        self.load_scene(screen, screenW, screenH)
     
-    def load_scene(self, screen):
+    def load_scene(self, screen, screenW, screenH):
         self.current_scene = self.scenes[self.current_scene_num]
-        self.current_scene.constructScene(screen)
+        self.current_scene.constructScene(screen, screenW, screenH)
         self.respawn_point = self.current_scene.respawn_point
         self.player.rect.x = self.respawn_point[0]
         self.player.rect.y = self.respawn_point[1] - self.player.rect.height

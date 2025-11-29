@@ -26,7 +26,8 @@ WHITE = (255, 255, 255)
 
 FPS = 60
 
-player = Player(WINDOWWIDTH, WINDOWHEIGHT, "Ninja Frog")
+character = "Ninja Frog"
+player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 x_speed = 2
 y_speed = 2
 
@@ -84,16 +85,16 @@ while True:
 		# Expand This
 	elif current_level.checkComplete() and not player.alive() and not current_level.end_goal:
 		# Implement Wait Here
-		player = Player(WINDOWWIDTH, WINDOWHEIGHT, "Ninja Frog")
+		player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 		current_level.respawn_player(player)
 		player.level = current_level
-		current_level.progress(screen)
+		current_level.progress(screen, WINDOWWIDTH, WINDOWHEIGHT)
 	elif not player.alive():
 		# Implement Wait Here
-		player = Player(WINDOWWIDTH, WINDOWHEIGHT, "Ninja Frog")
+		player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 		current_level.respawn_player(player)
 		player.level = current_level
-		current_level.resetScene(screen)
+		current_level.resetScene(screen, WINDOWWIDTH, WINDOWHEIGHT)
 
 	mainClock.tick(FPS)
 	pygame.display.flip()

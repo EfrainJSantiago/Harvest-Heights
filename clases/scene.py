@@ -24,7 +24,6 @@ class Scene:
         self.border1_extras = scene_values['border1_extras']
         self.border2 = scene_values['border2']
         self.border2_extras = scene_values['border2_extras']
-        self.enemy_types = scene_values['enemy_types']
         self.background = pygame.image.load("assets/Background/" + scene_values['background_color'] + ".png").convert()
         self.tiles = []
         self.scene_terrain = scene_values['scene_terrain']
@@ -47,13 +46,13 @@ class Scene:
 
         # 19 tile width, 13 tile height
     
-    def constructScene(self, screen):
+    def constructScene(self, screen, screenW, screenH):
         self.tiles.clear()
         _, _, width, height = self.background.get_rect()
 
         # Adds background to the scene
-        for i in range(screen.width // width + 1):
-            for j in range(screen.height // height + 1):
+        for i in range(screenW // width + 1):
+            for j in range(screenH // height + 1):
                 pos = (i * width, j * height)
                 self.tiles.append(pos)
         
@@ -153,8 +152,6 @@ class Scene:
 
                 self.collectables_list.add(fruit)
                 self.all_sprites.add(fruit)
-
-        width, height = screen.get_size()
         
          # Adds enemies to the screen
         for row in range(len(self.scene_enemies)):
@@ -167,18 +164,34 @@ class Scene:
 
                 match tile_id:
                     case 1:
-                        enemy = Trunk(width, height)
+                        enemy = Trunk(screenW, screenH)
+                    case 2:
+                        enemy = Plant(screenW, screenH)
+                    case 3:
+                        enemy = Mushroom(screenW, screenH)
+                    case 4:
+                        enemy = BlueBird(screenW, screenH)
+                    case 5:
+                        enemy = Slime(screenW, screenH)
+                    case 6:
+                        enemy = Radish(screenW, screenH)
 
                 pos_x = col * self.tile_size
                 pos_y = row * self.tile_size
 
+                # if pos_x < width // 2:
+                #     enemy.facingRight = True
+                #     if tile_id != 2:
+                #         enemy.moveSpeed *= -1
                 if pos_x < width // 2:
                     enemy.facingRight = True
+                    enemy.moveSpeed = abs(enemy.moveSpeed)
+                else:
+                    enemy.facingRight = False
+                    enemy.moveSpeed = -abs(enemy.moveSpeed)
                 
-                self.enemy_list.add(semisolid)
-                
-                enemy.rect.x = pos_x #- fruit.rect.width
-                enemy.rect.y = pos_y - enemy.rect.height
+                enemy.rect.x = pos_x #- enemy.rect.width
+                enemy.rect.y = pos_y - (enemy.rect.height // 2)
 
                 self.enemy_list.add(enemy)
                 self.all_sprites.add(enemy)
