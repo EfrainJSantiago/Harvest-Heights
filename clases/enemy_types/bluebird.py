@@ -30,11 +30,6 @@ class BlueBird(Enemy):
     def update(self):
         """ Actualiza el status del enemigo
         """
-        # Gira al enemigo
-        # if self.hit_wall and not self.idle:
-        #     self.hit_wall = False
-        #     self.facingRight = not self.facingRight
-        #     self.tick = 0
         
         # Verifica si una animación llego a su final
         if self.done:
@@ -55,18 +50,13 @@ class BlueBird(Enemy):
         self.move()
         super().update()
 
-        # # Verifica si choco algo
-        # block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
-        # for block in block_hit_list:
-        #     # Si se esta moviendo a la derecha,
-        #     # asigna su derecha a la izquierda del objeto que choco.
-        #     if self.moveSpeed > 0:
-        #         self.rect.right = block.rect.left
-        #         self.turn()
-        #     elif self.moveSpeed < 0:
-        #         # De lo contrario, si se esta moviendo a la izquierda, haz lo opuesto.
-        #         self.rect.left = block.rect.right
-        #         self.turn()
+        # Asegura de que el enemigo aparezca al tope del bloque si esta desplazado
+        block_hit_list = (pygame.sprite.spritecollide(self, self.level.platform_list, False) + pygame.sprite.spritecollide(self, self.level.semisolid_list, False))
+
+        for block in block_hit_list:
+            # Reinicia su posición en base al tope/fondo del objeto
+            if self.rect.bottom >= block.rect.top:
+                self.rect.bottom = block.rect.top
 
         probe = self.rect.copy()
         if self.moveSpeed > 0:  # Moving right

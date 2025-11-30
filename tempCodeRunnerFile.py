@@ -1,1 +1,1 @@
-e
+font = pygame.font.Font("BoldPixels.otf", 36)

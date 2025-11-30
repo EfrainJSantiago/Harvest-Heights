@@ -61,12 +61,9 @@ class Level:
         self.all_sprites.add(self.player)
 
     def restartLevel(self, screen, width, height):
-        self.scenes.clear()
-        self.semisolid_list.empty()
-        self.collectables_list.empty()
-        self.enemy_list.empty()
-        self.platform_list.empty()
-        self.all_sprites.empty()
+        self.player.disappear = False
+        self.current_scene.clear()
+        self.clear()
         self.startGame(screen, width, height)
     
     def resetScene(self, screen, screenW, screenH):
@@ -164,6 +161,14 @@ class Level:
         """
         self.player = player
         self.all_sprites.add(self.player)
+    
+    def clear(self):
+        self.scenes.clear()
+        self.semisolid_list.empty()
+        self.collectables_list.empty()
+        self.enemy_list.empty()
+        self.platform_list.empty()
+        self.all_sprites.empty()
 
     # def collide_big_enemy(self, big_enemy):
     #     if big_enemy.colliderect(self.player.rect):
