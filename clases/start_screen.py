@@ -1,6 +1,5 @@
 import pygame
 from clases.terrain import Terrain
-#from clases.player import Player
 from clases.fruits import Fruits
 
 terrain_pos = (96, 0)
@@ -71,7 +70,6 @@ class Start:
 
 				terrain = Terrain(pos_x, pos_y, tile_size, tile_offset_x, tile_offset_y)
 				self.platform_list.add(terrain)
-				self.all_sprites.add(terrain)
 		
 		for row in range(len(fruit_pos)):
 			for col in range(len(fruit_pos[row])):
@@ -135,7 +133,7 @@ class Start:
 		screen.fill((0, 0, 0))
 		for tile in self.tiles:
 			screen.blit(self.background, tile)
-		#self.platform_list.draw(screen)
+		self.platform_list.draw(screen)
 		self.all_sprites.draw(screen)
 
 		screenW, screenH = screen.get_size()
@@ -166,7 +164,7 @@ class Start:
 
 		y_offset += 200
 
-		text = self.font.render('Press ANY key to start', True, (255, 255, 255))
+		text = self.font.render('Press ENTER to start', True, (255, 255, 255))
 		textRect = text.get_rect()
 		textRect.topleft = (50, y_offset)
 		textRect.centerx = screen.get_rect().centerx
@@ -177,5 +175,5 @@ class Start:
 	
 	def clear(self):
 		self.tiles.clear()
-		#self.platform_list.empty()
+		self.platform_list.empty()
 		self.all_sprites.empty()

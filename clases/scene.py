@@ -76,7 +76,6 @@ class Scene:
                 terrain = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
                 
                 self.platform_list.add(terrain)
-                #self.all_sprites.add(terrain)
         
         # Adds decorative blocks to the screen
         for row in range(len(self.scene_decor)):
@@ -119,7 +118,6 @@ class Scene:
                 decor = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
                 
                 self.platform_list.add(decor)
-                #self.all_sprites.add(decor)
 
         # Adds semisolids to the screen
         for row in range(len(self.scene_semisolid)):
@@ -136,7 +134,6 @@ class Scene:
                 semisolid = Terrain(pos_x, pos_y, self.tile_size, tile_offset_x, tile_offset_y)
                 
                 self.semisolid_list.add(semisolid)
-                #self.all_sprites.add(semisolid)
 
         # Adds collectables to the screen
         for row in range(len(self.scene_collectables)):
@@ -179,10 +176,6 @@ class Scene:
                 pos_x = col * self.tile_size
                 pos_y = row * self.tile_size
 
-                # if pos_x < width // 2:
-                #     enemy.facingRight = True
-                #     if tile_id != 2:
-                #         enemy.moveSpeed *= -1
                 if pos_x < width // 2:
                     enemy.facingRight = True
                     enemy.moveSpeed = abs(enemy.moveSpeed)
@@ -190,7 +183,7 @@ class Scene:
                     enemy.facingRight = False
                     enemy.moveSpeed = -abs(enemy.moveSpeed)
                 
-                enemy.rect.x = pos_x #- enemy.rect.width
+                enemy.rect.x = pos_x
                 enemy.rect.y = pos_y - (enemy.rect.height // 2)
 
                 self.enemy_list.add(enemy)
@@ -234,24 +227,6 @@ class Scene:
     
     def update(self):
         self.all_sprites.update()
-
-    # def checkFinished(self):
-    #     if len(self.enemy_list) == 0:
-    #         return True
-    #     else:
-    #         return False
-
-    # def eat(self):
-    #     sprite_hit = pygame.sprite.spritecollide(self.player, self.enemy_list, True)
-    #     point = 0
-    #     if sprite_hit:
-    #         point = point + 1
-    #     return point
-
-    # def collide_big_enemy(self, big_enemy):
-    #     if big_enemy.colliderect(self.player.rect):
-    #         return True
-    #     return False
 
     def clear(self):
         self.tiles.clear()

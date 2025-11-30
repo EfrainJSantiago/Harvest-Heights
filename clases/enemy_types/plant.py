@@ -14,6 +14,7 @@ class Plant(Enemy):
         self.rect = self.image.get_rect()
         self.moveSpeed = 0
 
+        # Valores de ataque
         self.fire_delay = 60
         self.fire_tick = 0
         self.attack = False

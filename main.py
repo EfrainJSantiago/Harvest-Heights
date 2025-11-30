@@ -46,7 +46,7 @@ current_level = levels[current_level_no]
 player.level = current_level
 
 current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
-MAX_TIME = FPS * 60 * 2 # En frames por segundo por minuto
+MAX_TIME = FPS * 60 * 2 # Tiempo en frames por segundo por minuto
 timer = MAX_TIME
 
 # Fonts
@@ -55,14 +55,16 @@ font_outline = pygame.font.Font("BoldPixels.otf", 40)
 font_timer = pygame.font.Font("BoldPixels.otf", 38)
 font_shadow = pygame.font.Font("BoldPixels.otf", 37)
 
+# Estados de juego
+done = False # Menu y transición de niveles
+game_over = False # Game Over
+game_complete = False # Completo el juego
+
 # Otras Variables
-done = False
-game_over = False
 freeze_frame = False
 time_out = False
 play_again = False
 lives_lock = False
-game_complete = False
 level_complete = False
 fruit = Fruits("Apple")
 all_sprites = pygame.sprite.Group()
@@ -109,11 +111,13 @@ while not done:
 	start_screen.update()
 	start_screen.draw(screen)
 
+	# Actualiza el estado del juego
 	mainClock.tick(60)
 	pygame.display.flip()
 
 start_screen.clear()
 
+# Inicia el estado de transición al primer nivel
 done = False
 
 # Logica de juego
@@ -126,10 +130,11 @@ while True:
 			if event.key == pygame.K_ESCAPE:
 				pygame.quit()
 				quit()
+			# Debugging {Please remove when done}
 			elif event.key == pygame.K_BACKSPACE and timer > 600:
 				timer = 600
 			
-			# Checks for additional input if game over
+		# Verifica inputs adicionales en caso de game over
 		if event.type == pygame.KEYDOWN and game_over:
 			if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
 				play_again = not play_again
@@ -151,7 +156,9 @@ while True:
 					# Comenzar desde el comienzo del nivel
 					current_level.restartLevel(screen, WINDOWWIDTH, WINDOWHEIGHT)
 	
+	# Si el nivel no esta listo, preparalo
 	if not done:
+		# Si no ha completado el ultimo nivel, prepara el proximo
 		if level_complete and current_level_no != len(levels) - 1:
 			current_level.clear()
 			current_level_no += 1
@@ -161,10 +168,11 @@ while True:
 
 			current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
 			level_complete = False
+		# Si completo el ultimo nivel, gano el juego
 		elif level_complete and current_level_no == len(levels) - 1:
 			game_complete = True
 			done = True
-		elif not level_complete:
+		elif not level_complete: # Transición al proximo nivel
 			if timer == MAX_TIME:
 				timer = 180
 			elif timer > 0:
@@ -183,38 +191,24 @@ while True:
 
 				y_offset += 60
 
-				text = font_timer.render('Lives: ' + str(current_lives), True, BLACK)
-				textRect = text.get_rect()
-				textRect.topleft = (50, y_offset - (textRect.height // 2))
-				textRect.centerx = screen.get_rect().centerx + 1
-				screen.blit(text, textRect)
-
-				textRect.centerx = screen.get_rect().centerx - 1
-				screen.blit(text, textRect)
-
-				textRect.centerx = screen.get_rect().centerx
-
-				textRect.y += 1
-				screen.blit(text, textRect)
-
-				textRect.y -= 2
-				screen.blit(text, textRect)
-
 				text = font.render('Lives: ' + str(current_lives), True, WHITE)
 				textRect = text.get_rect()
 				textRect.topleft = (50, y_offset - (textRect.height // 2))
 				textRect.centerx = screen.get_rect().centerx
 				screen.blit(text, textRect)
-			else:
+			else: # Si se acabo el tiempo de espera, entra al nivel
 				done = True
 				timer = MAX_TIME
+	# Si no obtuvo un game over o completo el juego, entra al juego
 	elif not game_over and not game_complete:
 		current_level.player.move()
 		current_level.collect()
 		current_level.checkComplete()
 
+		current_level.update()
 		current_level.draw(screen)
 
+		# Si completo el nivel, señalalo
 		if current_level.checkFinished():
 			if not level_complete:
 				timer = 60
@@ -224,25 +218,33 @@ while True:
 			elif timer == 0:
 				done = False
 				timer = MAX_TIME
+		# Si completo una escena y no es la ultima, pasa a la proxima
 		elif current_level.checkComplete() and not player.alive() and not current_level.end_goal:
 			player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 			current_level.respawn_player(player)
 			player.level = current_level
 			current_level.progress(screen, WINDOWWIDTH, WINDOWHEIGHT)
+		# Si el jugador murio y no se ha acabado el tiempo
 		elif not player.alive() and not time_out:
+			# Baja la vida
 			if not lives_lock:
 				current_lives -= 1
+				lives_lock = True
+			# Si todavia tiene vidas, crea un nuevo jugador y reinicia la escena
 			if current_lives != 0:
 				player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 				current_level.respawn_player(player)
 				player.level = current_level
 				current_level.resetScene(screen, WINDOWWIDTH, WINDOWHEIGHT)
 				lives_lock = False
+			# Si perdio todas las vidas, Game Over
 			else:
 				game_over = True
 				lives_lock = False
 				timer = 60
+		# Si se acabo el tiempo, Game Over
 		elif timer <= 0:
+			# Golpea al jugador para iniciar su desaparición
 			if not player.hurt:
 				player.falling = False
 				player.change_y = 0
@@ -251,9 +253,12 @@ while True:
 				player.image_key = "Hit"
 				player.tick = 0
 				time_out = True
-			if freeze_frame == False and (player.image == player.all_sprites["Hit_right"][0] or player.image == player.all_sprites["Hit_left"][0]):
+			# Si no se ha parado el juego luego del golpe, paralo
+			if not freeze_frame and (player.image == player.all_sprites["Hit_right"][0]
+								 	or player.image == player.all_sprites["Hit_left"][0]):
 				pygame.time.wait(1000)
 				freeze_frame = True
+			# Si el jugador murio, Game Over
 			if not player.alive():
 				game_over = True
 				timer = 60
@@ -283,10 +288,12 @@ while True:
 		# Reduce el tiempo del nivel
 		if timer > 0:
 			timer -= 1
+	# Si es game over, entra a la pantalla de Game Over
 	elif game_over:
 		# Tiempo de espera
 		if timer > 0:
 			timer -= 1
+			current_level.update()
 			current_level.draw(screen)
 		else:
 			# Dibuja la pantalla de Game Over
@@ -332,6 +339,7 @@ while True:
 			
 			# Draws cursor
 			pygame.draw.polygon(screen, WHITE, select_triangle)
+	# Si gano el juego, entra a la pantalla de 'coronamiento'
 	elif game_complete:
 		draw_background()
 		y_offset = (WINDOWHEIGHT // 2) - 30
@@ -352,6 +360,6 @@ while True:
 		textRect.centerx = screen.get_rect().centerx
 		screen.blit(text, textRect)
 
-
+	# Actualiza el estado del juego
 	mainClock.tick(FPS)
 	pygame.display.flip()

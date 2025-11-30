@@ -3,7 +3,7 @@ import pygame
 class Player(pygame.sprite.Sprite):
     def __init__(self, screenW, screenH, character):
         super().__init__()
-        # importar imagen de saltar, caer y idle
+        # Importar sprite sheets a ser usadas
         path = "assets/Main Characters/" + character + '/'
         images = ["Run (32x32).png",
                  "Jump (32x32).png",
@@ -66,7 +66,6 @@ class Player(pygame.sprite.Sprite):
 
         self.image = self.all_sprites["Idle_right"][0]
         self.image_key = "Idle"
-        # self.image.fill(color)
         self.screenW = screenW
         self.screenH = screenH
         self.image.set_colorkey((0, 0, 0))

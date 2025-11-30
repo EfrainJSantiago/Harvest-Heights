@@ -1,6 +1,4 @@
 import pygame
-#from clases.enemy import Enemy
-#from clases.platform import Platform
 from clases.terrain import Terrain
 from clases.scene import Scene
 from clases.player import Player
@@ -26,37 +24,11 @@ class Level:
         self.end_goal = None
         self.screen = screen
 
-        # 19 tile width, 13 tile height
-
     def startGame(self, screen, screenW, screenH):
         for scene in self.scene_values:
             self.scenes.append(Scene(scene))
         self.current_scene_num = 0
         self.load_scene(screen, screenW, screenH)
-    #     # Add all floor
-    #     for i in range(5):
-    #         block = Enemy((255, 0, 0), 60, 60)
-
-    #         block.rect.x = random.randrange(width)
-    #         block.rect.y = random.randrange(height)
-
-    #         self.enemy_list.add(block)
-    #         self.all_sprites.add(block)
-
-    #     # Add all level platforms
-    #     # Array with width, height, x, and y of platform
-    #     level = [[100, 70, 50, 300],
-    #              [100, 70, 150, 350],
-    #              [100, 70, 100, 200],
-    #              ]
-
-    #     # Go through the array above and add platforms
-    #     for platform in level:
-    #         block = Platform(platform[0], platform[1])
-    #         block.rect.x = platform[2]
-    #         block.rect.y = platform[3]
-    #         block.player = self.player
-    #         self.platform_list.add(block)
 
         self.all_sprites.add(self.player)
 
@@ -96,11 +68,13 @@ class Level:
             enemy.level = self
         self.all_sprites.add(self.player)
 
-    def draw(self, screen):
-        screen.fill((0, 0, 0))
+    def update(self):
         self.current_scene.update()
         if self.end_goal:
             self.end_goal.update()
+
+    def draw(self, screen):
+        screen.fill((0, 0, 0))
         self.current_scene.draw(screen)
         self.all_sprites.draw(screen)
     
@@ -151,11 +125,7 @@ class Level:
                 if not sprite.collected:
                     sprite.collected = True
                     sprite.tick = 0
-    #     point = 0
-    #     if sprite_hit:
-    #         point = point + 1
-    #     return point
-
+                    
     def respawn_player(self, player):
         """ Respawns player if player was killed
         """
@@ -169,7 +139,9 @@ class Level:
         self.enemy_list.empty()
         self.platform_list.empty()
         self.all_sprites.empty()
-
+    
+    # No eliminar por si se decide usar para detectar si el jugador choco con algun enemigo
+    # Pero hasta el momento, puede que los mismos enemigos lo detecten
     # def collide_big_enemy(self, big_enemy):
     #     if big_enemy.colliderect(self.player.rect):
     #         return True
