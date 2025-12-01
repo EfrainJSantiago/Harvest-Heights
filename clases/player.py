@@ -80,6 +80,8 @@ class Player(pygame.sprite.Sprite):
         self.gravity = 1
         self.jumping = False
         self.falling = False
+        self.hop = pygame.mixer.Sound("sounds/Retro Jump Classic 08.wav")
+        self.hop.set_volume(0.2)
 
         # Other
         self.level = None
@@ -87,6 +89,8 @@ class Player(pygame.sprite.Sprite):
         self.done = False
         self.spawn_pos = None
         self.hurt = False
+        self.hit_sound = pygame.mixer.Sound("sounds/Retro Negative Short 23.wav")
+        self.hit_sound.set_volume(0.2)
 
     def move(self):
         if self.appear or self.disappear or self.hurt:
@@ -109,8 +113,6 @@ class Player(pygame.sprite.Sprite):
             if self.facingLeft:
                 self.tick = 0
             self.facingLeft = False
-        elif keys[pygame.K_r]:
-            self.level.resetScene(self.level.screen, self.screenW, self.screenH)
         else:
             if self.jumping:
                 self.image_key = "Jump"
@@ -260,12 +262,19 @@ class Player(pygame.sprite.Sprite):
         if len(platform_hit_list) > 0 or self.rect.bottom >= self.screenH and check:
             if not self.jumping and not self.falling:
                 self.jumping = True
+                self.hop.play()
                 self.image_key = "Jump"
                 self.tick = 0
             if self.falling:
                 self.image_key = "Fall"
         elif self.rect.bottom > self.screenH and not self.hurt:
             self.hit()
+        elif not check:
+            self.jumping = True
+            if self.change_y == self.jumpSpeed:
+                self.hop.play()
+            self.image_key = "Jump"
+            self.tick = 0
     
     def hit(self):
         self.falling = False
@@ -274,6 +283,7 @@ class Player(pygame.sprite.Sprite):
         self.hurt = True
         self.image_key = "Hit"
         self.tick = 0
+        self.hit_sound.play()
     
     def despawn(self):
         self.disappear = True

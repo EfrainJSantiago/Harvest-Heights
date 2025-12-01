@@ -1,0 +1,26 @@
+All assets in the pack have been repackaged by Efrain and Kartanien.
+
+
+LICENSE for all assets (except fonts):
+
+Creative Commons Zero (CC0)
+
+
+LISENCE for fonts:
+
+Creative Commons Attribution ShareAlike 4.0 International License (CC BY-SA 4.0).
+
+
+CREDIT:
+
+SPRITES by Pixel Frog - (https://pixelfrog-assets.itch.io/pixel-adventure-1)
+
+ENEMIES by Pixel Frog - (https://pixelfrog-assets.itch.io/pixel-adventure-2)
+
+SOUNDS by Kronbits - (https://kronbits.itch.io/freesfx)
+
+MUSIC by Tallbeard Studios - (https://tallbeard.itch.io/music-loop-bundle)
+
+FONTS by Yūki Pixels - (https://yukipixels.itch.io/boldpixels)
+
+LICENSE & CREDITS LAYOUT by Brackeys

@@ -1,9 +1,6 @@
 import pygame
-from clases.terrain import Terrain
 from clases.scene import Scene
-from clases.player import Player
 from clases.checkpoint import Checkpoint
-import random
 
 class Level:
     def __init__(self, screen, player, scenes):
@@ -138,10 +135,3 @@ class Level:
         self.enemy_list.empty()
         self.platform_list.empty()
         self.all_sprites.empty()
-    
-    # No eliminar por si se decide usar para detectar si el jugador choco con algun enemigo
-    # Pero hasta el momento, puede que los mismos enemigos lo detecten
-    # def collide_big_enemy(self, big_enemy):
-    #     if big_enemy.colliderect(self.player.rect):
-    #         return True
-    #     return False

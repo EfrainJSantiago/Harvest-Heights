@@ -18,6 +18,8 @@ class Checkpoint(pygame.sprite.Sprite):
                       "Checkpoing (No Flag).png"]
         
         self.all_sprites = {}
+        self.triggered = pygame.mixer.Sound("sounds/Retro Success Melody 02 - choir soprano.wav")
+        self.triggered.set_volume(0.3)
             
         # Load Checkpoint Sprites
         for image in self.images:
@@ -62,6 +64,7 @@ class Checkpoint(pygame.sprite.Sprite):
     
     def trigger(self):
         if not self.animate:
+            self.triggered.play()
             self.animate = True
             self.image_key = self.images[1]
             self.tick = 0

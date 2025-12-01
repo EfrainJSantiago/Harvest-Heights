@@ -21,6 +21,8 @@ class Plant(Enemy):
         self.fire_tick = 0
         self.attack = False
         self.fire_lock = True
+        self.shot = pygame.mixer.Sound("sounds/Retro Blop 18.wav")
+        self.shot.set_volume(0.2)
     
     def update(self):
         """ Actualiza el status del enemigo
@@ -55,6 +57,7 @@ class Plant(Enemy):
                     bullet.rect.centery = self.rect.centery - 5
                     self.level.projectile_list.add(bullet)
                     self.level.all_sprites.add(bullet)
+                    self.shot.play()
                     self.fire_lock = True
 
         super().update()
@@ -108,3 +111,4 @@ class Plant(Enemy):
         self.idle = False
         self.tick = 0
         self.done = False
+        self.hit_sound.play()

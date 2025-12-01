@@ -27,6 +27,9 @@ class Fruits(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.collected = False
         self.done = False
+        self.collect_sound = pygame.mixer.Sound("sounds/Retro PickUp 18.wav")
+        self.collect_sound.set_volume(0.1)
+        self.sound_played = False
     
     def update(self):
         if self.done:
@@ -38,6 +41,9 @@ class Fruits(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
             self.mask = pygame.mask.from_surface(self.image)
         elif self.collected:
+            if not self.sound_played:
+                self.collect_sound.play()
+                self.sound_played = True
             sprite_index = (self.tick // self.animation_speed) % len(self.collect_animation)
             self.image = self.collect_animation[sprite_index]
             self.tick += 1

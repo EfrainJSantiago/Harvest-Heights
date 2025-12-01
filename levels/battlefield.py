@@ -77,9 +77,10 @@ scene1 = {
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],],
-    'enemy_types': {1: 'Trunk',
-                    2: 'Plant',
-                    3: 'Mushroom',},
+    'fruit_palette': {1: "Apple",
+                      2: "Bananas",
+                      3: "Orange",
+                      4: "Strawberry",},
     'start': (128, 128), #224, 256
     'checkpoint': None,
     'end': None,

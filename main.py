@@ -1,5 +1,3 @@
-import random
-import math
 import pygame
 
 #from clases.enemy import Enemy
@@ -48,6 +46,8 @@ player.level = current_level
 current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
 MAX_TIME = FPS * 60 * 2 # Tiempo en frames por segundo por minuto
 timer = MAX_TIME
+time = timer
+tick_down = True
 
 # Fonts
 font = pygame.font.Font("BoldPixels.otf", 36) #28
@@ -67,13 +67,19 @@ time_out = False
 play_again = False
 lives_lock = False
 level_complete = False
+music_loaded = False
 fruit = Fruits("Apple")
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player_npc)
 all_sprites.add(fruit)
 
 # Musica y Sonido
-
+transition = pygame.mixer.Sound("sounds/Retro Event Acute 08.wav")
+transition.set_volume(0.5)
+pause = pygame.mixer.Sound("sounds/Retro Event StereoUP 02.wav") # or Retro Event UI 01
+pause.set_volume(0.2)
+pygame.mixer.music.load("sounds/music/Troubadeck 28 Quaint Questions.ogg")
+pygame.mixer.music.set_volume(0.5)
 
 # In between background
 TILES = []
@@ -92,6 +98,7 @@ def draw_background():
 
 # Crea el menu de inicio
 start_screen = Start(screen)
+pygame.mixer.music.play(-1, fade_ms=1000)
 
 # Logica de menu
 while not done:
@@ -102,9 +109,6 @@ while not done:
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			done = True
 		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_ESCAPE:
-				pygame.quit()
-				quit()
 			if event.key == pygame.K_RETURN:
 				done = True
 
@@ -117,6 +121,7 @@ while not done:
 	pygame.display.flip()
 
 start_screen.clear()
+pygame.mixer.music.fadeout(2000)
 
 # Inicia el estado de transición al primer nivel
 done = False
@@ -130,10 +135,10 @@ while True:
 		if event.type == pygame.KEYDOWN:
 			# Alterna el estado de juego
 			if event.key == pygame.K_ESCAPE:
-				paused = not paused
-			# Debugging {Please remove when done}
-			elif event.key == pygame.K_BACKSPACE and timer > 600:
-				timer = 600
+				if not game_complete and not game_over and done:
+					paused = not paused
+					if paused:
+						pause.play()
 			
 		# Verifica inputs adicionales en caso de game over
 		if event.type == pygame.KEYDOWN and game_over:
@@ -144,6 +149,8 @@ while True:
 					pygame.quit()
 					quit()
 				elif play_again == True: # Reset Game
+					pygame.mixer.music.fadeout(2000)
+					music_loaded = False
 					game_over = False
 					player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 
@@ -179,6 +186,7 @@ while True:
 		elif not level_complete: # Transición al proximo nivel
 			if timer == MAX_TIME:
 				timer = 180
+				transition.play()
 			elif timer > 0:
 				# Tiempo de espera
 				timer -= 1
@@ -201,8 +209,10 @@ while True:
 				textRect.centerx = screen.get_rect().centerx
 				screen.blit(text, textRect)
 			else: # Si se acabo el tiempo de espera, entra al nivel
+				pygame.mixer.music.stop()
 				done = True
 				timer = MAX_TIME
+				tick_down = True
 	# Si no obtuvo un game over o completo el juego, entra al juego
 	elif not game_over and not game_complete:
 		# Si el juego no esta pausado, sigue de costumbre
@@ -219,6 +229,7 @@ while True:
 				if not level_complete:
 					timer = 60
 					level_complete = True
+					tick_down = False
 				elif timer > 0:
 					timer -= 1
 				elif timer == 0:
@@ -248,6 +259,7 @@ while True:
 					game_over = True
 					lives_lock = False
 					timer = 60
+					tick_down = False
 			# Si se acabo el tiempo, Game Over
 			elif timer <= 0:
 				# Golpea al jugador para iniciar su desaparición
@@ -268,6 +280,7 @@ while True:
 				if not player.alive():
 					game_over = True
 					timer = 60
+					tick_down = False
 		else:
 			current_level.draw(screen)
 
@@ -288,7 +301,9 @@ while True:
 		screen.blit(text, [10, 10])
 
 		# Calcula el tiempo sobrante del nivel
-		seconds = timer // 60
+		if tick_down:
+			time = timer
+		seconds = time // 60
 		minutes = seconds // 60
 		seconds = seconds % 60
 		current_time = str(minutes) + ':'
@@ -314,6 +329,11 @@ while True:
 			current_level.update()
 			current_level.draw(screen)
 		else:
+			if not music_loaded:
+				pygame.mixer.music.load("sounds/music/Sketchbook 2024-11-20.ogg")
+				pygame.mixer.music.set_volume(0.5)
+				pygame.mixer.music.play(-1, fade_ms=1000)
+				music_loaded = True
 			# Dibuja la pantalla de Game Over
 			draw_background()
 			y_offset = (WINDOWHEIGHT // 2) - 90
@@ -359,6 +379,11 @@ while True:
 			pygame.draw.polygon(screen, WHITE, select_triangle)
 	# Si gano el juego, entra a la pantalla de 'coronamiento'
 	elif game_complete:
+		if not music_loaded:
+				pygame.mixer.music.load("sounds/music/Troubadeck 12 Good King.ogg")
+				pygame.mixer.music.set_volume(0.5)
+				pygame.mixer.music.play(-1, fade_ms=2000)
+				music_loaded = True
 		draw_background()
 		y_offset = (WINDOWHEIGHT // 2) - 30
 

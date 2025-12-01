@@ -67,6 +67,8 @@ class Enemy(pygame.sprite.Sprite):
         # Otros valores
         self.level = None # Guarda el nivel donde se encuentra el enemigo
         self.moveSpeed = 2
+        self.hit_sound = pygame.mixer.Sound("sounds/Retro Negative Short 23.wav")
+        self.hit_sound.set_volume(0.2)
 
     def update(self):
         """ Actualiza la animación del enemigo.

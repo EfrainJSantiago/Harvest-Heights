@@ -20,10 +20,7 @@ class Scene:
         self.semisolid_pos = scene_values['semisolid_pos']
         self.tile_mult = scene_values['tile_multiplier']
         self.tile_size = scene_values['tile_size']
-        self.border1 = scene_values['border1']
-        self.border1_extras = scene_values['border1_extras']
-        self.border2 = scene_values['border2']
-        self.border2_extras = scene_values['border2_extras']
+        self.fruit_palette = scene_values['fruit_palette']
         self.background = pygame.image.load("assets/Background/" + scene_values['background_color'] + ".png").convert()
         self.tiles = []
         self.scene_terrain = scene_values['scene_terrain']
@@ -142,7 +139,7 @@ class Scene:
                 if tile_id == 0:
                     continue
                 
-                fruit = Fruits('Apple')
+                fruit = Fruits(self.fruit_palette[tile_id])
                 
                 fruit.rect.x = (col * self.tile_size) - (fruit.rect.width//4)
                 fruit.rect.y = (row * self.tile_size) - (fruit.rect.height//4)

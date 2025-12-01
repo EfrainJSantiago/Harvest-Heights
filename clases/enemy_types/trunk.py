@@ -157,3 +157,4 @@ class Trunk(Enemy):
         self.idle = False
         self.tick = 0
         self.done = False
+        self.hit_sound.play()

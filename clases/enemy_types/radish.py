@@ -29,10 +29,8 @@ class Radish(Enemy):
             return
         
         # Si el enemigo no esta quieto, muevelo
-        if not self.idle:
-            self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
-            if self.health == 1:
-                self.rect.x += self.moveSpeed
+        if not self.idle and self.health == 1:
+            self.rect.x += (self.moveSpeed * 2)    # Mover el enemigo horizontalmente
     
     def update(self):
         """ Actualiza el status del enemigo
@@ -64,31 +62,6 @@ class Radish(Enemy):
         super().update()
 
         if self.health == 2:
-            probe = self.rect.copy()
-            if self.moveSpeed > 0:  # Moving right
-                probe.x += (self.rect.width // 2)
-            else:                  # Moving left
-                probe.x -= (self.rect.width // 2)
-            
-            # Verifica si se bajó de una plataforma
-            probe.y += 2
-            platform_hit = False
-
-            for platform in self.level.platform_list:
-                if probe.colliderect(platform.rect):
-                    platform_hit = True
-                    break
-
-            # Si no encuentra una plataforma, gira al enemigo
-            if platform_hit:
-                self.turn()
-            
-            if probe.right >= self.screenW:
-                self.turn()
-            elif probe.left < 0:
-                # De lo contrario, si se esta moviendo a la izquierda, haz lo opuesto.
-                self.turn()
-
             # Check and see if the player lands on the enemy
             player = self.level.player
             prev_bottom = player.rect.bottom + player.change_y
@@ -122,8 +95,6 @@ class Radish(Enemy):
         if self.falling:
             self.rect.y -= self.change_y    # subir/bajar 
             self.change_y -= self.gravity         # gravedad (que tan pesado es el salto/la caida)
-            # if self.change_y < 0:
-            #     self.falling = True
         
         # Verifica si choco algo
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
@@ -159,31 +130,6 @@ class Radish(Enemy):
             if not self.falling:
                 self.change_y = 0
             self.falling = True
-
-        # probe = self.rect.copy()
-        # if self.moveSpeed > 0:  # Moving right
-        #     probe.x += self.rect.width
-        # else:                  # Moving left
-        #     probe.x -= self.rect.width
-        
-        # # Verifica si se bajó de una plataforma
-        # probe.y += 2
-        # platform_hit = False
-
-        # for platform in self.level.platform_list:
-        #     if probe.colliderect(platform.rect):
-        #         platform_hit = True
-        #         break
-
-        # if not platform_hit:
-        #     for platform in self.level.semisolid_list:
-        #         if probe.colliderect(platform.rect):
-        #             platform_hit = True
-        #             break
-
-        # # Si no encuentra una plataforma, gira al enemigo
-        # if not platform_hit:
-        #     self.turn()
         
         # Si el enemigo llega al vacio al fondo de la pantalla, cuentalo como golpe
         if self.rect.bottom >= self.screenH and not self.hurt:
@@ -215,21 +161,6 @@ class Radish(Enemy):
                 else:
                     if not self.level.player.hurt:
                         self.level.player.hit()
-        
-        # # Check and see if the player lands on the enemy
-        # player = self.level.player
-        # prev_bottom = player.rect.bottom + player.change_y
-
-        # if player.rect.colliderect(self.rect):
-        #     if player.change_y < 0 and player.rect.bottom >= self.rect.top and prev_bottom <= self.rect.top:
-        #         player.change_y = (player.jumpSpeed // 2)
-        #         player.jump(False)
-        #         self.done = False
-        #         self.hurt = True
-        #         self.change_y = 4
-        #         self.image_key = "Hit"
-        #         self.tick = 0
-        #         self.health -= 1
     
     def turn(self):
         if not self.turnLock:
@@ -249,3 +180,4 @@ class Radish(Enemy):
         self.tick = 0
         self.health -= 1
         self.turnLock = True
+        self.hit_sound.play()
