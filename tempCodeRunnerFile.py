@@ -1,2 +1,1 @@
-	current_level.stop_music()
-						music_loaded = False
+# Crea el background

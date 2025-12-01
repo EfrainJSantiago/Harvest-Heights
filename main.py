@@ -42,7 +42,7 @@ levels = [Level(screen, player, scenes, level_music)]
 current_level_no = 0
 current_level = levels[current_level_no]
 player.level = current_level
-current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
+current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
 
 # Tiempo
 MAX_TIME = FPS * 60 * 2 	# Tiempo en frames por segundo por minuto
@@ -179,7 +179,7 @@ while True:
 					current_level.restartLevel()
 					current_level.respawn_player(player)
 					player.level = current_level
-					current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
+					current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
 	
 	# Si el nivel no esta listo, preparalo
 	if not done:
@@ -190,7 +190,7 @@ while True:
 			current_level_no += 1
 			current_level = levels[current_level_no]
 			player.level = current_level
-			current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
+			current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
 			level_complete = False
 
 		# Si completo el ultimo nivel, gano el juego
@@ -269,7 +269,7 @@ while True:
 				player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 				current_level.respawn_player(player)
 				player.level = current_level
-				current_level.progress(screen, WINDOWWIDTH, WINDOWHEIGHT)
+				current_level.progress(WINDOWWIDTH, WINDOWHEIGHT)
 
 			# Si el jugador murio y no se ha acabado el tiempo
 			elif not player.alive() and not time_out:
@@ -284,7 +284,7 @@ while True:
 					player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 					current_level.respawn_player(player)
 					player.level = current_level
-					current_level.resetScene(screen, WINDOWWIDTH, WINDOWHEIGHT)
+					current_level.resetScene(WINDOWWIDTH, WINDOWHEIGHT)
 					lives_lock = False
 
 				# Si perdio todas las vidas, Game Over
