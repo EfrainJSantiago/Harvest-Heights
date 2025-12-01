@@ -12,17 +12,21 @@ class Trunk(Enemy):
         self.image = self.all_sprites["Idle_left"][0]
         self.image_key = "Idle"
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.hit_box = pygame.Rect(0, 0, 50, 50)
 
         # Valores de movimiento
         self.gravity = 1
         self.falling = False
         self.change_y = 0
-        self.hit_wall = False
         self.moveSpeed = 2
     
     def move(self):
         """ Mueve al enemigo horizontalmente
         """
+        if self.hurt:
+            return
+        
         # Si el enemigo no esta quieto, muevelo
         if not self.idle:
             self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
@@ -30,11 +34,8 @@ class Trunk(Enemy):
     def update(self):
         """ Actualiza el status del enemigo
         """
-        # Gira al enemigo
-        # if self.hit_wall and not self.idle:
-        #     self.hit_wall = False
-        #     self.facingRight = not self.facingRight
-        #     self.tick = 0
+        self.hit_box.bottom = self.rect.bottom
+        self.hit_box.centerx = self.rect.centerx - 3
 
         # Verifica si una animación llego a su final
         if self.done:
@@ -47,14 +48,13 @@ class Trunk(Enemy):
                 self.turnLock = False
             if self.hurt: # Si es la de golpe, matalo
                 self.kill()
-            if self.hit_wall:
-                self.hit_wall = False
-                self.facingRight = not self.facingRight
-                self.tick = 0
 
         # Mueve al enemigo
         self.move()
         super().update()
+
+        if self.hurt:
+            return
 
         # Verifica si choco algo
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
@@ -127,13 +127,33 @@ class Trunk(Enemy):
             # De lo contrario, si se esta moviendo a la izquierda, haz lo opuesto.
             self.rect.left = 0
             self.turn()
+        
+        # Check and see if the player lands on the enemy
+        player = self.level.player
+        prev_bottom = player.rect.bottom + player.change_y
+
+        if player.hit_box.colliderect(self.hit_box):
+            if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
+                player.change_y = (player.jumpSpeed // 2)
+                player.jump(False)
+                self.hit()
+            else:
+                if not self.level.player.hurt:
+                    self.level.player.hit()
     
     def turn(self):
         if not self.turnLock:
             self.turnLock = True
             self.done = False
             self.moveSpeed *= -1
-            self.hit_wall = True
             self.idle = True
             self.image_key = "Idle"
             self.tick = 0
+    
+    def hit(self):
+        self.hurt = True
+        self.image_key = "Hit"
+        self.turnLock = True
+        self.idle = False
+        self.tick = 0
+        self.done = False

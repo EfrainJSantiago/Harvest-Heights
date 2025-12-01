@@ -12,39 +12,25 @@ class Slime(Enemy):
         self.image = self.all_sprites["Idle-Run_left"][0]
         self.image_key = "Idle-Run"
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.hit_box = pygame.Rect(0, 0, 60, 52)
 
         # Valores de movimiento
         self.gravity = 1
         self.falling = False
         self.change_y = 0
-        self.hit_wall = False
-        self.moveSpeed = 1
+        self.moveSpeed = 2
     
     def move(self):
         """ Mueve al enemigo horizontalmente
         """
-        # Si el enemigo no esta quieto, muevelo
-        if not self.idle:
-            self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
+        self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
     
     def update(self):
         """ Actualiza el status del enemigo
         """
-        
-        # Verifica si una animación llego a su final
-        if self.done:
-            # Si es la de idle, vuelve a correr
-            if self.idle or self.turnLock:
-                self.idle = False
-                self.tick = 0
-                self.done = False
-                self.turnLock = False
-            if self.hurt: # Si es la de golpe, matalo
-                self.kill()
-            if self.hit_wall:
-                self.hit_wall = False
-                self.facingRight = not self.facingRight
-                self.tick = 0
+        self.hit_box.bottom = self.rect.bottom
+        self.hit_box.centerx = self.rect.centerx + 1
 
         # Mueve al enemigo
         self.move()
@@ -94,9 +80,9 @@ class Slime(Enemy):
 
         probe = self.rect.copy()
         if self.moveSpeed > 0:  # Moving right
-            probe.x += self.rect.width
+            probe.x += 8
         else:                  # Moving left
-            probe.x -= self.rect.width
+            probe.x -= 8
         
         # Verifica si se bajó de una plataforma
         probe.y += 2
@@ -134,19 +120,22 @@ class Slime(Enemy):
             self.rect.left = 0
             self.turn()
         
+        if platform_hit:
+            self.turnLock = False
+        
         # Check and see if the player lands on the enemy
         player = self.level.player
         prev_bottom = player.rect.bottom + player.change_y
 
-        if player.rect.colliderect(self.rect):
-            if player.change_y < 0 and player.rect.bottom >= self.rect.top and prev_bottom <= self.rect.top:
+        if player.hit_box.colliderect(self.hit_box):
+            if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
                 player.change_y = player.jumpSpeed
                 player.jump(False)
+            else:
+                if not self.level.player.hurt:
+                    self.level.player.hit()
     
     def turn(self):
         if not self.turnLock:
             self.turnLock = True
-            self.done = False
             self.moveSpeed *= -1
-            self.hit_wall = True
-            self.tick = 0

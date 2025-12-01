@@ -12,29 +12,33 @@ class Radish(Enemy):
         self.image = self.all_sprites["Idle 1_left"][0]
         self.image_key = "Idle 1"
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.hit_box = pygame.Rect(0, 0, 54, 56)
 
         # Valores de movimiento
         self.gravity = 1
         self.falling = False
         self.change_y = 0
-        self.hit_wall = False
         self.moveSpeed = 2
         self.health = 2
     
     def move(self):
         """ Mueve al enemigo horizontalmente
         """
+        if self.hurt:
+            return
+        
         # Si el enemigo no esta quieto, muevelo
-        if not self.idle and not self.hurt:
+        if not self.idle:
             self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
+            if self.health == 1:
+                self.rect.x += self.moveSpeed
     
     def update(self):
         """ Actualiza el status del enemigo
         """
-        # Gira al enemigo
-        if self.hurt and self.health == 0:
-            self.rect.y -= self.change_y    # subir/bajar 
-            self.change_y -= self.gravity
+        self.hit_box.bottom = self.rect.bottom
+        self.hit_box.centerx = self.rect.centerx - 2
         
         # Verifica si una animación llego a su final
         if self.done:
@@ -53,10 +57,7 @@ class Radish(Enemy):
                 self.falling = False
                 self.tick = 0
                 self.image_key = "Run"
-            if self.hit_wall:
-                self.hit_wall = False
-                self.facingRight = not self.facingRight
-                self.tick = 0
+                self.turnLock = False
 
         # Mueve al enemigo
         self.move()
@@ -92,18 +93,18 @@ class Radish(Enemy):
             player = self.level.player
             prev_bottom = player.rect.bottom + player.change_y
 
-            if player.rect.colliderect(self.rect):
-                if player.change_y < 0 and player.rect.bottom >= self.rect.top and prev_bottom <= self.rect.top:
+            if player.hit_box.colliderect(self.hit_box):
+                if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
                     player.change_y = (player.jumpSpeed // 2)
                     player.jump(False)
-                    self.done = False
-                    self.hurt = True
-                    self.falling = True
-                    self.image_key = "Hit"
-                    self.tick = 0
-                    self.health -= 1
+                    self.hit()
+                else:
+                    if not self.level.player.hurt:
+                        self.level.player.hit()
             return
-
+        
+        if self.hurt and self.health == 0:
+            return
         # Verifica si choco algo
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
@@ -201,6 +202,20 @@ class Radish(Enemy):
             self.rect.left = 0
             self.turn()
         
+        if self.health == 1 and not self.hurt:
+            # Check and see if the player lands on the enemy
+            player = self.level.player
+            prev_bottom = player.rect.bottom + player.change_y
+
+            if player.hit_box.colliderect(self.hit_box):
+                if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
+                    player.change_y = (player.jumpSpeed // 2)
+                    player.jump(False)
+                    self.hit()
+                else:
+                    if not self.level.player.hurt:
+                        self.level.player.hit()
+        
         # # Check and see if the player lands on the enemy
         # player = self.level.player
         # prev_bottom = player.rect.bottom + player.change_y
@@ -221,8 +236,16 @@ class Radish(Enemy):
             self.turnLock = True
             self.done = False
             self.moveSpeed *= -1
-            self.hit_wall = True
             self.idle = True
             self.tick = 0
             if self.health == 1:
                 self.image_key = "Idle 2"
+    
+    def hit(self):
+        self.done = False
+        self.hurt = True
+        self.falling = True
+        self.image_key = "Hit"
+        self.tick = 0
+        self.health -= 1
+        self.turnLock = True

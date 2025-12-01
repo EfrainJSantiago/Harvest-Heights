@@ -15,7 +15,6 @@ class Player(pygame.sprite.Sprite):
         self.all_sprites = {}
         self.animation_speed = 3
         self.tick = 0
-        self.mask = None
 
         # Load Player Sprites
         for image in images:
@@ -70,6 +69,8 @@ class Player(pygame.sprite.Sprite):
         self.screenH = screenH
         self.image.set_colorkey((0, 0, 0))
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.hit_box = pygame.Rect(0, 0, 46, 48)
 
         # Jumping variables
         self.change_x = 0
@@ -123,6 +124,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         """ Move the player. """
+
         if self.done and self.disappear:
             self.kill()
         elif self.done and self.hurt:
@@ -196,10 +198,12 @@ class Player(pygame.sprite.Sprite):
                 self.jumping = False
                 self.falling = True
 
+        self.hit_box.bottom = self.rect.bottom
+        self.hit_box.centerx = self.rect.centerx
+
         # Check and see if we hit anything
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
-
             # Reset our position based on the top/bottom of the object.
             if self.change_y < 0:
                 self.rect.bottom = block.rect.top
@@ -214,7 +218,7 @@ class Player(pygame.sprite.Sprite):
         prev_bottom = self.rect.bottom + self.change_y
         block_hit_list = pygame.sprite.spritecollide(self, self.level.semisolid_list, False)
         for block in block_hit_list:
-
+            
             # Reset our position based on the top/bottom of the object.
             if self.change_y < 0 and self.rect.bottom >= block.rect.top and prev_bottom <= block.rect.top:
                 self.rect.bottom = block.rect.top
@@ -223,7 +227,7 @@ class Player(pygame.sprite.Sprite):
                 self.change_y = 0
         
         # Check and see if we land on the end goal
-        if self.level.end_goal and self.rect.colliderect(self.level.end_goal.rect):
+        if self.level.end_goal and self.level.end_goal.mask and pygame.sprite.collide_mask(self, self.level.end_goal):
             self.level.end_goal.trigger()
         
         # --- Check if player walked off a platform ---
@@ -237,12 +241,7 @@ class Player(pygame.sprite.Sprite):
             self.falling = True
         
         if self.rect.bottom >= self.screenH and not self.hurt:
-            self.falling = False
-            self.change_y = 0
-            self.jumping = False
-            self.hurt = True
-            self.image_key = "Hit"
-            self.tick = 0
+            self.hit()
 
 
     def jump(self, check = True):
@@ -266,12 +265,15 @@ class Player(pygame.sprite.Sprite):
             if self.falling:
                 self.image_key = "Fall"
         elif self.rect.bottom > self.screenH and not self.hurt:
-            self.falling = False
-            self.change_y = 0
-            self.jumping = False
-            self.hurt = True
-            self.image_key = "Hit"
-            self.tick = 0
+            self.hit()
+    
+    def hit(self):
+        self.falling = False
+        self.change_y = 0
+        self.jumping = False
+        self.hurt = True
+        self.image_key = "Hit"
+        self.tick = 0
     
     def despawn(self):
         self.disappear = True

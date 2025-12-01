@@ -27,6 +27,8 @@ class Enemy(pygame.sprite.Sprite):
             dimensions = self.extract_dimensions(image)
             if dimensions == None:
                 str_to_remove = '.png'
+                if enemy_type == 'Mushroom':
+                    width, height = 32, 32
             else: # Si las tiene, remplaza los valores default
                 width, height = list(dimensions)
                 str_to_remove = " " + image.split()[len(image.split()) - 1]
@@ -50,6 +52,7 @@ class Enemy(pygame.sprite.Sprite):
         # Valores para calcular choque
         self.rect = None
         self.mask = None
+        self.image_key = None
 
         # Valores para animación
         self.animation_speed = 3
@@ -57,13 +60,13 @@ class Enemy(pygame.sprite.Sprite):
         self.done = False
 
         # Valores para el status del enemigo
-        self.facingRight = False # Direccion
         self.hurt = False
         self.idle = True
         self.turnLock = False
 
         # Otros valores
         self.level = None # Guarda el nivel donde se encuentra el enemigo
+        self.moveSpeed = 2
 
     def update(self):
         """ Actualiza la animación del enemigo.
@@ -71,7 +74,7 @@ class Enemy(pygame.sprite.Sprite):
         # Consigue el nombre del sprite para la animación
         sprite_sheet_name = self.image_key
 
-        if self.facingRight:
+        if self.moveSpeed > 0:
             sprite_sheet_name += "_right"
         else:
             sprite_sheet_name += "_left"

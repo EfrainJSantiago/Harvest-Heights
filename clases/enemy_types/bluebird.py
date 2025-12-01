@@ -12,6 +12,8 @@ class BlueBird(Enemy):
         self.image = self.all_sprites["Flying_left"][0]
         self.image_key = "Flying"
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.hit_box = pygame.Rect(0, 0, 60, 44)
 
         # Valores de movimiento
         self.gravity = 1
@@ -23,6 +25,9 @@ class BlueBird(Enemy):
     def move(self):
         """ Mueve al enemigo horizontalmente
         """
+        if self.hurt:
+            return
+        
         # Si el enemigo no esta quieto, muevelo
         if not self.idle:
             self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
@@ -30,6 +35,7 @@ class BlueBird(Enemy):
     def update(self):
         """ Actualiza el status del enemigo
         """
+        self.hit_box.center = self.rect.center
         
         # Verifica si una animación llego a su final
         if self.done:
@@ -43,12 +49,14 @@ class BlueBird(Enemy):
                 self.kill()
             if self.hit_wall:
                 self.hit_wall = False
-                self.facingRight = not self.facingRight
                 self.tick = 0
 
         # Mueve al enemigo
         self.move()
         super().update()
+
+        if self.hurt:
+            return
 
         # Asegura de que el enemigo aparezca al tope del bloque si esta desplazado
         block_hit_list = (pygame.sprite.spritecollide(self, self.level.platform_list, False) + pygame.sprite.spritecollide(self, self.level.semisolid_list, False))
@@ -82,6 +90,19 @@ class BlueBird(Enemy):
         elif probe.left < 0:
             # De lo contrario, si se esta moviendo a la izquierda, haz lo opuesto.
             self.turn()
+        
+        # Check and see if the player lands on the enemy
+        player = self.level.player
+        prev_bottom = player.rect.bottom + player.change_y
+
+        if player.hit_box.colliderect(self.hit_box):
+            if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
+                player.change_y = (player.jumpSpeed // 2)
+                player.jump(False)
+                self.hit()
+            else:
+                if not self.level.player.hurt:
+                    self.level.player.hit()
     
     def turn(self):
         if not self.turnLock:
@@ -91,3 +112,11 @@ class BlueBird(Enemy):
             self.hit_wall = True
             self.idle = True
             self.tick = 0
+    
+    def hit(self):
+        self.hurt = True
+        self.image_key = "Hit"
+        self.turnLock = True
+        self.idle = False
+        self.tick = 0
+        self.done = False

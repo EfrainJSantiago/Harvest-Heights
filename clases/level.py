@@ -12,6 +12,7 @@ class Level:
         self.semisolid_list = pygame.sprite.Group()
         self.collectables_list = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
+        self.projectile_list = pygame.sprite.Group()
         self.scene_values = scenes
         self.player = player
         self.scenes = []
@@ -32,11 +33,9 @@ class Level:
 
         self.all_sprites.add(self.player)
 
-    def restartLevel(self, screen, width, height):
-        self.player.disappear = False
+    def restartLevel(self):
         self.current_scene.clear()
         self.clear()
-        self.startGame(screen, width, height)
     
     def resetScene(self, screen, screenW, screenH):
         self.player.disappear = False
@@ -122,7 +121,7 @@ class Level:
         if not self.player.appear:
             sprite_hit = pygame.sprite.spritecollide(self.player, self.collectables_list, False)
             for sprite in sprite_hit:
-                if not sprite.collected:
+                if pygame.sprite.collide_mask(self.player, sprite) and not sprite.collected:
                     sprite.collected = True
                     sprite.tick = 0
                     

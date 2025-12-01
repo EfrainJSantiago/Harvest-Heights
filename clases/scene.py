@@ -177,14 +177,15 @@ class Scene:
                 pos_y = row * self.tile_size
 
                 if pos_x < width // 2:
-                    enemy.facingRight = True
                     enemy.moveSpeed = abs(enemy.moveSpeed)
                 else:
-                    enemy.facingRight = False
                     enemy.moveSpeed = -abs(enemy.moveSpeed)
                 
                 enemy.rect.x = pos_x
                 enemy.rect.y = pos_y - (enemy.rect.height // 2)
+
+                if tile_id == 5:
+                    enemy.rect.y += 2
 
                 self.enemy_list.add(enemy)
                 self.all_sprites.add(enemy)
