@@ -1,6 +1,5 @@
 import pygame
 
-#from clases.enemy import Enemy
 from clases.player import Player
 from clases.level import Level
 from clases.start_screen import Start
@@ -12,6 +11,7 @@ import levels.flat as Flat
 import levels.test as Test
 import levels.battlefield as Battlefield
 scenes = [Battlefield.scene1, Test.scene1, Flat.scene1]
+level_music = Flat.music
 
 pygame.init()
 
@@ -32,19 +32,20 @@ BLACK = (0, 0, 0)
 # Declarar el jugador
 character = "Ninja Frog"
 player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
-player_npc = NPC_IDLE(WINDOWWIDTH, WINDOWHEIGHT, character)
+
+# Vidas
 MAX_LIVES = 3
 current_lives = MAX_LIVES
 
 # Logica de niveles
-levels = [Level(screen, player, scenes)]
+levels = [Level(screen, player, scenes, level_music)]
 current_level_no = 0
 current_level = levels[current_level_no]
-
 player.level = current_level
-
 current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
-MAX_TIME = FPS * 60 * 2 # Tiempo en frames por segundo por minuto
+
+# Tiempo
+MAX_TIME = FPS * 60 * 2 	# Tiempo en frames por segundo por minuto
 timer = MAX_TIME
 time = timer
 tick_down = True
@@ -56,47 +57,52 @@ font_timer = pygame.font.Font("BoldPixels.otf", 38)
 font_shadow = pygame.font.Font("BoldPixels.otf", 37)
 
 # Estados de juego
-done = False # Menu y transición de niveles
-game_over = False # Game Over
-game_complete = False # Completo el juego
-paused = False # Alterna el estado del juego entre juego y pausa.
+done = False 			# Menu y transición de niveles
+game_over = False 		# Game Over
+game_complete = False 	# Completo el juego
+paused = False 			# Alterna el estado del juego entre juego y pausa.
 
-# Otras Variables
-freeze_frame = False
-time_out = False
-play_again = False
-lives_lock = False
-level_complete = False
-music_loaded = False
+# Variables del Win Screen
+player_npc = NPC_IDLE(WINDOWWIDTH, WINDOWHEIGHT, character)
 fruit = Fruits("Apple")
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player_npc)
 all_sprites.add(fruit)
 
+# Otras Variables
+freeze_frame = False 	# Detiene la pantalla
+time_out = False 		# Determina si se acabo el tiempo
+play_again = False 		# Determina si el jugador quiere jugar otra vez
+lives_lock = False 		# Evita que las vidas sean restadas cada frame
+level_complete = False 	# Determina si el nivel ha sido completado
+music_loaded = False 	# Determina si se puede cambiar la musica
+
 # Musica y Sonido
 transition = pygame.mixer.Sound("sounds/Retro Event Acute 08.wav")
-transition.set_volume(0.5)
 pause = pygame.mixer.Sound("sounds/Retro Event StereoUP 02.wav") # or Retro Event UI 01
-pause.set_volume(0.2)
 pygame.mixer.music.load("sounds/music/Troubadeck 28 Quaint Questions.ogg")
+transition.set_volume(0.5)
+pause.set_volume(0.2)
 pygame.mixer.music.set_volume(0.5)
 
-# In between background
+# Fondo Principal
 TILES = []
 background = pygame.image.load("assets/Background/Purple.png").convert()
 _, _, width, height = background.get_rect()
 
-# Adds background
+	# Crea el background
 for i in range(WINDOWWIDTH // width + 1):
 	for j in range(WINDOWHEIGHT // height + 1):
 		pos = (i * width, j * height)
 		TILES.append(pos)
 
 def draw_background():
+	""" Dibuja el fondo a la pantalla
+	"""
 	for tile in TILES:
 		screen.blit(background, tile)
 
-# Crea el menu de inicio
+# Menu de Inicio
 start_screen = Start(screen)
 pygame.mixer.music.play(-1, fade_ms=1000)
 
@@ -108,15 +114,16 @@ while not done:
 			quit()
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			done = True
+			transition.play()
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_RETURN:
 				done = True
+				transition.play()
 
 	screen.fill((0, 0, 0))
 	start_screen.update()
 	start_screen.draw(screen)
 
-	# Actualiza el estado del juego
 	mainClock.tick(60)
 	pygame.display.flip()
 
@@ -139,29 +146,36 @@ while True:
 					paused = not paused
 					if paused:
 						pause.play()
+						current_level.pause_music()
+					else:
+						current_level.unpause_music()
 			
 		# Verifica inputs adicionales en caso de game over
 		if event.type == pygame.KEYDOWN and game_over:
 			if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
 				play_again = not play_again
 			if event.key == pygame.K_RETURN:
-				if play_again == False:
+				if not play_again:
 					pygame.quit()
 					quit()
-				elif play_again == True: # Reset Game
-					pygame.mixer.music.fadeout(2000)
+				
+				# Reinicia el nivel
+				elif play_again:
+					transition.play()
+					pygame.mixer.music.fadeout(1000)
+
+					# Reinicia valores
 					music_loaded = False
 					game_over = False
-					player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
-
-					# Reset Scores
 					current_lives = MAX_LIVES
 					timer = MAX_TIME
 					freeze_frame = False
 					time_out = False
 					done = False
+					tick_down = True
 
 					# Comenzar desde el comienzo del nivel
+					player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 					current_level.restartLevel()
 					current_level.respawn_player(player)
 					player.level = current_level
@@ -169,26 +183,29 @@ while True:
 	
 	# Si el nivel no esta listo, preparalo
 	if not done:
+
 		# Si no ha completado el ultimo nivel, prepara el proximo
 		if level_complete and current_level_no != len(levels) - 1:
 			current_level.clear()
 			current_level_no += 1
 			current_level = levels[current_level_no]
-
 			player.level = current_level
-
 			current_level.startGame(screen, WINDOWWIDTH, WINDOWHEIGHT)
 			level_complete = False
+
 		# Si completo el ultimo nivel, gano el juego
 		elif level_complete and current_level_no == len(levels) - 1:
 			game_complete = True
 			done = True
-		elif not level_complete: # Transición al proximo nivel
+
+		# Transición al proximo nivel
+		elif not level_complete:
 			if timer == MAX_TIME:
-				timer = 180
-				transition.play()
-			elif timer > 0:
 				# Tiempo de espera
+				timer = 180
+				if current_level_no != 0:
+					transition.play()
+			elif timer > 0:
 				timer -= 1
 
 				# Dibuja la pantalla de transición
@@ -208,16 +225,24 @@ while True:
 				textRect.topleft = (50, y_offset - (textRect.height // 2))
 				textRect.centerx = screen.get_rect().centerx
 				screen.blit(text, textRect)
-			else: # Si se acabo el tiempo de espera, entra al nivel
+			
+			# Si se acabo el tiempo de espera, entra al nivel
+			else:
 				pygame.mixer.music.stop()
+				current_level.load_music()
 				done = True
 				timer = MAX_TIME
 				tick_down = True
+	
 	# Si no obtuvo un game over o completo el juego, entra al juego
 	elif not game_over and not game_complete:
+
 		# Si el juego no esta pausado, sigue de costumbre
 		if not paused:
-			current_level.player.move()
+			if not music_loaded:
+				current_level.play_music()
+				music_loaded = True
+			current_level.player.action()
 			current_level.collect()
 			current_level.checkComplete()
 
@@ -235,18 +260,25 @@ while True:
 				elif timer == 0:
 					done = False
 					timer = MAX_TIME
+				if music_loaded:
+					current_level.stop_music()
+					music_loaded = False
+
 			# Si completo una escena y no es la ultima, pasa a la proxima
 			elif current_level.checkComplete() and not player.alive() and not current_level.end_goal:
 				player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 				current_level.respawn_player(player)
 				player.level = current_level
 				current_level.progress(screen, WINDOWWIDTH, WINDOWHEIGHT)
+
 			# Si el jugador murio y no se ha acabado el tiempo
 			elif not player.alive() and not time_out:
+
 				# Baja la vida
 				if not lives_lock:
 					current_lives -= 1
 					lives_lock = True
+
 				# Si todavia tiene vidas, crea un nuevo jugador y reinicia la escena
 				if current_lives != 0:
 					player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
@@ -254,14 +286,20 @@ while True:
 					player.level = current_level
 					current_level.resetScene(screen, WINDOWWIDTH, WINDOWHEIGHT)
 					lives_lock = False
+
 				# Si perdio todas las vidas, Game Over
 				else:
 					game_over = True
 					lives_lock = False
 					timer = 60
 					tick_down = False
+					if music_loaded:
+						current_level.stop_music()
+						music_loaded = False
+
 			# Si se acabo el tiempo, Game Over
 			elif timer <= 0:
+
 				# Golpea al jugador para iniciar su desaparición
 				if not player.hurt:
 					player.falling = False
@@ -271,11 +309,13 @@ while True:
 					player.image_key = "Hit"
 					player.tick = 0
 					time_out = True
+
 				# Si no se ha parado el juego luego del golpe, paralo
 				if not freeze_frame and (player.image == player.all_sprites["Hit_right"][0]
 										or player.image == player.all_sprites["Hit_left"][0]):
 					pygame.time.wait(1000)
 					freeze_frame = True
+
 				# Si el jugador murio, Game Over
 				if not player.alive():
 					game_over = True
@@ -321,8 +361,10 @@ while True:
 		# Reduce el tiempo del nivel si el juego no esta pausado
 		if timer > 0 and not paused:
 			timer -= 1
+
 	# Si es game over, entra a la pantalla de Game Over
 	elif game_over:
+
 		# Tiempo de espera
 		if timer > 0:
 			timer -= 1
@@ -334,6 +376,7 @@ while True:
 				pygame.mixer.music.set_volume(0.5)
 				pygame.mixer.music.play(-1, fade_ms=1000)
 				music_loaded = True
+
 			# Dibuja la pantalla de Game Over
 			draw_background()
 			y_offset = (WINDOWHEIGHT // 2) - 90
@@ -377,6 +420,7 @@ while True:
 			
 			# Draws cursor
 			pygame.draw.polygon(screen, WHITE, select_triangle)
+			
 	# Si gano el juego, entra a la pantalla de 'coronamiento'
 	elif game_complete:
 		if not music_loaded:
@@ -384,6 +428,7 @@ while True:
 				pygame.mixer.music.set_volume(0.5)
 				pygame.mixer.music.play(-1, fade_ms=2000)
 				music_loaded = True
+
 		draw_background()
 		y_offset = (WINDOWHEIGHT // 2) - 30
 
@@ -402,7 +447,6 @@ while True:
 		textRect.topleft = (50, y_offset)
 		textRect.centerx = screen.get_rect().centerx
 		screen.blit(text, textRect)
-
-	# Actualiza el estado del juego
+	
 	mainClock.tick(FPS)
 	pygame.display.flip()

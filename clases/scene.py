@@ -7,12 +7,14 @@ import random
 
 class Scene:
     def __init__(self, scene_values: list):
-        #self.enemy_list = pygame.sprite.Group()
+        # Listas de sprites
+        self.enemy_list = pygame.sprite.Group()
         self.collectables_list = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
         self.platform_list = pygame.sprite.Group()
         self.semisolid_list = pygame.sprite.Group()
-        self.enemy_list = pygame.sprite.Group()
+
+        # Guarda los valores de la escena
         self.terrain_pos = scene_values['terrain_pos']
         self.terrain_extra_pos = scene_values['terrain_extra_pos']
         self.decor_pos = scene_values['decor_pos']
@@ -22,14 +24,14 @@ class Scene:
         self.tile_size = scene_values['tile_size']
         self.fruit_palette = scene_values['fruit_palette']
         self.background = pygame.image.load("assets/Background/" + scene_values['background_color'] + ".png").convert()
-        self.tiles = []
         self.scene_terrain = scene_values['scene_terrain']
         self.scene_decor = scene_values['scene_decor']
         self.scene_semisolid = scene_values['scene_semisolid']
         self.scene_collectables = scene_values['scene_collectables']
         self.scene_enemies = scene_values['scene_enemies']
-        self.respawn_point = None
 
+        # Obtiene el punto de partida de la escena
+        self.respawn_point = None
         if scene_values['start'] != None:
             self.respawn_point = scene_values['start']
         elif scene_values['checkpoint'] != None:
@@ -37,17 +39,21 @@ class Scene:
         else:
             self.respawn_point = (32, 96)
         
+        # Obtiene el punto de final de la escena si existe
         self.endpoint = None
         if scene_values['end'] != None:
             self.endpoint = scene_values['end']
-
-        # 19 tile width, 13 tile height
+        
+        # Variable del background
+        self.tiles = []
     
-    def constructScene(self, screen, screenW, screenH):
+    def constructScene(self, screenW, screenH):
+        """ Construye la escena del nivel.
+        """
         self.tiles.clear()
         _, _, width, height = self.background.get_rect()
 
-        # Adds background to the scene
+        # Añade el background a la escena
         for i in range(screenW // width + 1):
             for j in range(screenH // height + 1):
                 pos = (i * width, j * height)
@@ -55,7 +61,7 @@ class Scene:
         
         tile_offset_x, tile_offset_y = 0, 0
 
-        # Adds terrain to the scene
+        # Añade el terreno a la escena
         for row in range(len(self.scene_terrain)):
             for col in range(len(self.scene_terrain[row])):
                 tile_id = self.scene_terrain[row][col]
@@ -74,7 +80,7 @@ class Scene:
                 
                 self.platform_list.add(terrain)
         
-        # Adds decorative blocks to the screen
+        # Añade los bloques decorativos a la escena
         for row in range(len(self.scene_decor)):
             for col in range(len(self.scene_decor[row])):
                 tile_id = self.scene_decor[row][col]
@@ -116,7 +122,7 @@ class Scene:
                 
                 self.platform_list.add(decor)
 
-        # Adds semisolids to the screen
+        # Añade los semisolidos a la escena
         for row in range(len(self.scene_semisolid)):
             for col in range(len(self.scene_semisolid[row])):
                 tile_id = self.scene_semisolid[row][col]
@@ -132,7 +138,7 @@ class Scene:
                 
                 self.semisolid_list.add(semisolid)
 
-        # Adds collectables to the screen
+        # Añade los coleccionables a la escena
         for row in range(len(self.scene_collectables)):
             for col in range(len(self.scene_collectables[row])):
                 tile_id = self.scene_collectables[row][col]
@@ -147,7 +153,7 @@ class Scene:
                 self.collectables_list.add(fruit)
                 self.all_sprites.add(fruit)
         
-         # Adds enemies to the screen
+        # Añade los enemigos a la escena
         for row in range(len(self.scene_enemies)):
             for col in range(len(self.scene_enemies[row])):
                 tile_id = self.scene_enemies[row][col]
@@ -188,24 +194,38 @@ class Scene:
                 self.all_sprites.add(enemy)
         
     def getCollectables(self):
+        """ Devuelve la lista de coleccionables.
+        """
         return self.collectables_list
     
     def getPlatforms(self):
+        """ Devuelve la lista de plataformas.
+        """
         return self.platform_list
     
     def getSemisolids(self):
+        """ Devuelve la lista de semisolidos.
+        """
         return self.semisolid_list
     
     def getEnemies(self):
+        """ Devuelve la lista de enemigos.
+        """
         return self.enemy_list
     
     def getSprites(self):
+        """ Devuelve la lista de todos los sprites.
+        """
         return self.all_sprites
     
     def getEndPoint(self):
+        """ Devuelve el punto final de la escena, si existe.
+        """
         return self.endpoint if self.endpoint else (0, 0)
     
     def getTilePosition(self, pos: tuple, tile_id, size):
+        """ Obtiene la posicion del sprite del terreno.
+        """
         if size == 2:
             tile_offset_x = pos[0] + self.tile_mult * ((tile_id - 10) % size)
             tile_offset_y = pos[1] + self.tile_mult * ((tile_id - 10) // size)
@@ -216,6 +236,8 @@ class Scene:
         return tile_offset_x, tile_offset_y
 
     def draw(self, screen):
+        """ Dibuja los sprites en la escena.
+        """
         screen.fill((0, 0, 0))
         for tile in self.tiles:
             screen.blit(self.background, tile)
@@ -224,9 +246,13 @@ class Scene:
         self.all_sprites.draw(screen)
     
     def update(self):
+        """ Actualiza todos los sprites de la escena.
+        """
         self.all_sprites.update()
 
     def clear(self):
+        """ Borra todos los elementos de la escena.
+        """
         self.tiles.clear()
         self.platform_list.empty()
         self.semisolid_list.empty()

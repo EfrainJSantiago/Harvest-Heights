@@ -49,26 +49,31 @@ class Enemy(pygame.sprite.Sprite):
                 flipped_sprites[i] = pygame.transform.flip(flipped_sprites[i], True, False)
             self.all_sprites[image.replace(str_to_remove, "") + "_right"] = flipped_sprites
 
-        # Valores para calcular choque
+        # Variables para calcular choque
+        self.image = None
         self.rect = None
         self.mask = None
         self.image_key = None
 
-        # Valores para animación
+        # Variables para animación
         self.animation_speed = 3
         self.tick = 0
         self.done = False
 
-        # Valores para el status del enemigo
+        # Variables para el status del enemigo
         self.hurt = False
         self.idle = True
         self.turnLock = False
 
-        # Otros valores
-        self.level = None # Guarda el nivel donde se encuentra el enemigo
+        # Variables de movimiento
         self.moveSpeed = 2
+
+        # Variables de sonido
         self.hit_sound = pygame.mixer.Sound("sounds/Retro Negative Short 23.wav")
         self.hit_sound.set_volume(0.2)
+
+        # Otros Variables
+        self.level = None # Guarda el nivel donde se encuentra el enemigo
 
     def update(self):
         """ Actualiza la animación del enemigo.

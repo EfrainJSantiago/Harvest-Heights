@@ -4,6 +4,8 @@ Harvest Heights is a 2D platformer game project developed to practice and test o
 
 As the name class name implies, the project game was developed fully in python. It was made using free sprites, assets, and sounds on itch.io.
 
+The ZIP package download for this project can be found here: [link](https://github.com/EfrainJSantiago/Harvest-Heights)
+
 ## How to Run
 Run the main.py file to play the game.
 
@@ -24,6 +26,7 @@ Run the main.py file to play the game.
 * Level Design
 * Motivator (without him, the other contributor would have lazed around and done nothing)
 * Pause State and Menu
+* Decision Making
 
 **Efrain**
 * Asset Selection

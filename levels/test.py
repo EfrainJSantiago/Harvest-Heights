@@ -1,5 +1,6 @@
+music = "sounds/music/Sketchbook 2024-11-29.ogg"
+
 scene1 = {
-    'name': 'test',
     'tile_size': 32,
     'tile_multiplier': 16,
     'background_color': "Blue",

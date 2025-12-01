@@ -15,8 +15,8 @@ class Radish(Enemy):
         self.mask = pygame.mask.from_surface(self.image)
         self.hit_box = pygame.Rect(0, 0, 54, 56)
 
-        # Valores de movimiento
-        self.gravity = 1
+        # Variables de movimiento
+        self.gravity = -1
         self.falling = False
         self.change_y = 0
         self.moveSpeed = 2
@@ -28,9 +28,9 @@ class Radish(Enemy):
         if self.hurt:
             return
         
-        # Si el enemigo no esta quieto, muevelo
+        # Si el enemigo no esta idle ni volando, muevelo
         if not self.idle and self.health == 1:
-            self.rect.x += (self.moveSpeed * 2)    # Mover el enemigo horizontalmente
+            self.rect.x += (self.moveSpeed * 2)
     
     def update(self):
         """ Actualiza el status del enemigo
@@ -48,9 +48,11 @@ class Radish(Enemy):
                 self.turnLock = False
                 if self.health == 1:
                     self.image_key = "Run"
-            if self.hurt and self.health == 0: # Si es la de golpe, matalo
+
+            # Si es la de golpe y no le queda vida, matalo
+            if self.hurt and self.health == 0:
                 self.kill()
-            if self.hurt and self.health > 0:
+            elif self.hurt and self.health > 0:
                 self.hurt = False
                 self.falling = False
                 self.tick = 0
@@ -62,11 +64,12 @@ class Radish(Enemy):
         super().update()
 
         if self.health == 2:
-            # Check and see if the player lands on the enemy
+            # Verifica si el jugador toco al enemigo
             player = self.level.player
             prev_bottom = player.rect.bottom + player.change_y
 
             if player.hit_box.colliderect(self.hit_box):
+                # Si brinco encima, rebota al jugador y golpea al enemigo
                 if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
                     player.change_y = (player.jumpSpeed // 2)
                     player.jump(False)
@@ -78,6 +81,7 @@ class Radish(Enemy):
         
         if self.hurt and self.health == 0:
             return
+        
         # Verifica si choco algo
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
         for block in block_hit_list:
@@ -93,8 +97,8 @@ class Radish(Enemy):
         
         # Movimiendo de arriba/abajo
         if self.falling:
-            self.rect.y -= self.change_y    # subir/bajar 
-            self.change_y -= self.gravity         # gravedad (que tan pesado es el salto/la caida)
+            self.rect.y -= self.change_y
+            self.change_y += self.gravity
         
         # Verifica si choco algo
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
@@ -125,7 +129,7 @@ class Radish(Enemy):
         platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False) + pygame.sprite.spritecollide(self, self.level.semisolid_list, False)
         self.rect.y -= 2
 
-        # Si no encuentra una plataforma, baja al enemigo
+        # Si no encuentra una plataforma, dejalo caer
         if len(platform_hit_list) == 0:
             if not self.falling:
                 self.change_y = 0
@@ -144,25 +148,26 @@ class Radish(Enemy):
             self.rect.right = self.screenW
             self.turn()
         elif self.rect.left < 0:
-            # De lo contrario, si se esta moviendo a la izquierda, haz lo opuesto.
             self.rect.left = 0
             self.turn()
         
-        if self.health == 1 and not self.hurt:
-            # Check and see if the player lands on the enemy
-            player = self.level.player
-            prev_bottom = player.rect.bottom + player.change_y
+        # Verifica si el jugador toco al enemigo
+        player = self.level.player
+        prev_bottom = player.rect.bottom + player.change_y
 
-            if player.hit_box.colliderect(self.hit_box):
-                if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
-                    player.change_y = (player.jumpSpeed // 2)
-                    player.jump(False)
-                    self.hit()
-                else:
-                    if not self.level.player.hurt:
-                        self.level.player.hit()
+        if player.hit_box.colliderect(self.hit_box):
+            # Si brinco encima, rebota al jugador y golpea al enemigo
+            if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
+                player.change_y = (player.jumpSpeed // 2)
+                player.jump(False)
+                self.hit()
+            else:
+                if not self.level.player.hurt:
+                    self.level.player.hit()
     
     def turn(self):
+        """ Gira al enemigo
+        """
         if not self.turnLock:
             self.turnLock = True
             self.done = False
@@ -173,6 +178,8 @@ class Radish(Enemy):
                 self.image_key = "Idle 2"
     
     def hit(self):
+        """ Lastima al enemigo
+        """
         self.done = False
         self.hurt = True
         self.falling = True

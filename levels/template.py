@@ -1,5 +1,6 @@
+music = ""
+
 scene1 = {
-    'name': None,
     'tile_size': 32,
     'tile_multiplier': 16,
     'background_color': "Blue",
@@ -8,10 +9,6 @@ scene1 = {
     'decor_pos': (192, 0),
     'decor_type': 'brown',
     'semisolid_pos': (272, 0),
-    'border1': (0, 0),
-    'border1_extras': (48, 0),
-    'border2': (0, 64),
-    'border2_extras': (48, 64),
     'scene_terrain': [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

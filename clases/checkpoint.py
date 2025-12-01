@@ -4,6 +4,8 @@ import pygame
 class Checkpoint(pygame.sprite.Sprite):
     def __init__(self, type):
         super().__init__()
+
+        # Obtiene la dirección de los tipos de animaciones del checkpoint.
         path = "assets/Items/Checkpoints/"
         self.images = []
         if type == 'Start' or type == 'End':
@@ -14,38 +16,51 @@ class Checkpoint(pygame.sprite.Sprite):
                 self.images.append(type + " (Moving) (64x64).png")
         else:
             self.images = ["Checkpoing (Flag Idle)(64x64).png",
-                      "Checkpoing (Flag Out)(64x64).png",
-                      "Checkpoing (No Flag).png"]
+                            "Checkpoing (Flag Out)(64x64).png",
+                            "Checkpoing (No Flag).png"]
         
+        # Carga los sprites del checkpoint
         self.all_sprites = {}
-        self.triggered = pygame.mixer.Sound("sounds/Retro Success Melody 02 - choir soprano.wav")
-        self.triggered.set_volume(0.3)
             
-        # Load Checkpoint Sprites
         for image in self.images:
+            # Carga el sprite sheet
             sprite_sheet = pygame.image.load(path + type + '/' + image).convert_alpha()
             sprites = []
+
+            # Por cada sprite en el sprite sheet, crea una instancia del sprite
             for i in range(sprite_sheet.get_width() // 64):
                 surface = pygame.Surface((64, 64), pygame.SRCALPHA, 32)
                 rect = pygame.Rect(i * 64, 0, 64, 64)
                 surface.blit(sprite_sheet, (0, 0), rect)
                 sprites.append(pygame.transform.scale2x(surface))
             
+            # Guarda todos los sprites en su direccion default.
             self.all_sprites[image] = sprites
         
+        # Asigna un sprite por default
         self.image_key = None
         if type == 'Checkpoint':
             self.image_key = self.images[2]
         else:
             self.image_key = self.images[0]
         self.image = self.all_sprites[self.image_key][0]
+
+        # Variables para calcular toque
+        self.rect = self.image.get_rect()
+        self.mask = None
+
+        # Variables de animación
         self.animation_speed = 3
         self.tick = 0
-        self.mask = None
-        self.rect = self.image.get_rect()
         self.done = False
         self.animate = False
-        self.goal = False
+
+        # Variables de volumen
+        self.triggered = pygame.mixer.Sound("sounds/Retro Success Melody 02 - choir soprano.wav")
+        self.triggered.set_volume(0.3)
+
+        # Otras variables
+        self.goal = False   # Señala si el checkpoint ha sido activado
     
     def update(self):
         if self.done:

@@ -15,8 +15,8 @@ class Trunk(Enemy):
         self.mask = pygame.mask.from_surface(self.image)
         self.hit_box = pygame.Rect(0, 0, 50, 50)
 
-        # Valores de movimiento
-        self.gravity = 1
+        # Variables de movimiento
+        self.gravity = -1
         self.falling = False
         self.change_y = 0
         self.moveSpeed = 2
@@ -27,9 +27,9 @@ class Trunk(Enemy):
         if self.hurt:
             return
         
-        # Si el enemigo no esta quieto, muevelo
+        # Si el enemigo no esta idle, muevelo
         if not self.idle:
-            self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
+            self.rect.x += self.moveSpeed
     
     def update(self):
         """ Actualiza el status del enemigo
@@ -46,10 +46,11 @@ class Trunk(Enemy):
                 self.tick = 0
                 self.done = False
                 self.turnLock = False
-            if self.hurt: # Si es la de golpe, matalo
+            
+            # Si es la de golpe, matalo
+            if self.hurt:
                 self.kill()
 
-        # Mueve al enemigo
         self.move()
         super().update()
 
@@ -71,10 +72,8 @@ class Trunk(Enemy):
         
         # Movimiendo de arriba/abajo
         if self.falling:
-            self.rect.y -= self.change_y    # subir/bajar 
-            self.change_y -= self.gravity         # gravedad (que tan pesado es el salto/la caida)
-            # if self.change_y < 0:
-            #     self.falling = True
+            self.rect.y -= self.change_y
+            self.change_y += self.gravity
         
         # Verifica si choco algo
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
@@ -124,15 +123,15 @@ class Trunk(Enemy):
             self.rect.right = self.screenW
             self.turn()
         elif self.rect.left < 0:
-            # De lo contrario, si se esta moviendo a la izquierda, haz lo opuesto.
             self.rect.left = 0
             self.turn()
         
-        # Check and see if the player lands on the enemy
+        # Verifica si el jugador toco al enemigo
         player = self.level.player
         prev_bottom = player.rect.bottom + player.change_y
 
         if player.hit_box.colliderect(self.hit_box):
+            # Si brinco encima, rebota al jugador y golpea al enemigo
             if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
                 player.change_y = (player.jumpSpeed // 2)
                 player.jump(False)
@@ -142,6 +141,8 @@ class Trunk(Enemy):
                     self.level.player.hit()
     
     def turn(self):
+        """ Gira al enemigo
+        """
         if not self.turnLock:
             self.turnLock = True
             self.done = False
@@ -151,6 +152,8 @@ class Trunk(Enemy):
             self.tick = 0
     
     def hit(self):
+        """ Lastima al enemigo
+        """
         self.hurt = True
         self.image_key = "Hit"
         self.turnLock = True

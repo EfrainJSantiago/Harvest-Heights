@@ -15,8 +15,8 @@ class Slime(Enemy):
         self.mask = pygame.mask.from_surface(self.image)
         self.hit_box = pygame.Rect(0, 0, 60, 52)
 
-        # Valores de movimiento
-        self.gravity = 1
+        # Variables de movimiento
+        self.gravity = -1
         self.falling = False
         self.change_y = 0
         self.moveSpeed = 2
@@ -24,7 +24,7 @@ class Slime(Enemy):
     def move(self):
         """ Mueve al enemigo horizontalmente
         """
-        self.rect.x += self.moveSpeed    # Mover el enemigo horizontalmente
+        self.rect.x += self.moveSpeed
     
     def update(self):
         """ Actualiza el status del enemigo
@@ -32,7 +32,6 @@ class Slime(Enemy):
         self.hit_box.bottom = self.rect.bottom
         self.hit_box.centerx = self.rect.centerx + 1
 
-        # Mueve al enemigo
         self.move()
         super().update()
 
@@ -51,8 +50,8 @@ class Slime(Enemy):
         
         # Movimiendo de arriba/abajo
         if self.falling:
-            self.rect.y -= self.change_y    # subir/bajar 
-            self.change_y -= self.gravity         # gravedad (que tan pesado es el salto/la caida)
+            self.rect.y -= self.change_y
+            self.change_y += self.gravity
         
         # Verifica si choco algo
         block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
@@ -77,11 +76,12 @@ class Slime(Enemy):
                 self.rect.bottom = block.rect.top
                 self.falling = False
                 self.change_y = 0
-
+        
+        # Explora frente a si mismo para evitar chocar
         probe = self.rect.copy()
-        if self.moveSpeed > 0:  # Moving right
+        if self.moveSpeed > 0:
             probe.x += 8
-        else:                  # Moving left
+        else:
             probe.x -= 8
         
         # Verifica si se bajó de una plataforma
@@ -116,18 +116,18 @@ class Slime(Enemy):
             self.rect.right = self.screenW
             self.turn()
         elif self.rect.left < 0:
-            # De lo contrario, si se esta moviendo a la izquierda, haz lo opuesto.
             self.rect.left = 0
             self.turn()
         
         if platform_hit:
             self.turnLock = False
         
-        # Check and see if the player lands on the enemy
+        # Verifica si el jugador toco al enemigo
         player = self.level.player
         prev_bottom = player.rect.bottom + player.change_y
 
         if player.hit_box.colliderect(self.hit_box):
+            # Si brinco encima, rebota al jugador y cuentalo como un salto
             if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
                 player.change_y = player.jumpSpeed
                 player.jump(False)
@@ -136,6 +136,8 @@ class Slime(Enemy):
                     self.level.player.hit()
     
     def turn(self):
+        """ Gira al enemigo
+        """
         if not self.turnLock:
             self.turnLock = True
             self.moveSpeed *= -1

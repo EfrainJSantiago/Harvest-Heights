@@ -16,11 +16,13 @@ class Plant(Enemy):
         self.mask = pygame.mask.from_surface(self.image)
         self.hit_box = pygame.Rect(0, 0, 56, 70)
 
-        # Valores de ataque
+        # Variables de ataque
         self.fire_delay = 60
         self.fire_tick = 0
         self.attack = False
         self.fire_lock = True
+
+        # Variables de sonido
         self.shot = pygame.mixer.Sound("sounds/Retro Blop 18.wav")
         self.shot.set_volume(0.2)
     
@@ -40,6 +42,8 @@ class Plant(Enemy):
                 self.image_key = "Idle"
                 self.tick = 0
                 self.done = False
+            
+            # Si es la de golpe, matalo
             if self.hurt:
                 self.kill()
         else:
@@ -65,24 +69,39 @@ class Plant(Enemy):
         if self.hurt:
             return
         
-        # Asegura de que el enemigo aparezca al tope del bloque si esta desplazado
-        block_hit_list = (pygame.sprite.spritecollide(self, self.level.platform_list, False) + pygame.sprite.spritecollide(self, self.level.semisolid_list, False))
+        # Asegura de que el enemigo aparezca al alineado a los bloques si esta desplazado
+        block_hit_list = (pygame.sprite.spritecollide(self, self.level.platform_list, False))
 
         for block in block_hit_list:
-            # Reinicia su posición en base al tope/fondo del objeto
+            if self.rect.bottom >= block.rect.top:
+                self.rect.bottom = block.rect.top
+            elif self.rect.top <= block.rect.bottom:
+                self.rect.top = block.rect.bottom
+            elif self.rect.right >= block.rect.left:
+                self.rect.right = block.rect.left
+            elif self.rect.left <= block.rect.right:
+                self.rect.left = block.rect.right
+        
+        block_hit_list = (pygame.sprite.spritecollide(self, self.level.semisolid_list, False))
+
+        for block in block_hit_list:
             if self.rect.bottom >= block.rect.top:
                 self.rect.bottom = block.rect.top
         
+        # Verifica si el jugador esta en su linea de mirada.
         rect_left = 0
         width = 0
+
         if self.moveSpeed > 0:
             rect_left = self.screenW
+
         if rect_left > 0:
             width = (rect_left - self.rect.centerx)
         else:
             width = self.screenW - (self.screenW - self.rect.centerx)
         rect = pygame.Rect(rect_left, self.rect.centery, width, 2)
 
+        # Si encuentra al jugador, ataca
         if rect.colliderect(self.level.player.hit_box) and self.fire_tick >= self.fire_delay and not self.level.player.appear:
             self.done = False
             self.idle = False
@@ -92,11 +111,12 @@ class Plant(Enemy):
             self.tick = 0
             self.fire_lock = False
 
-        # Check and see if the player lands on the enemy
+        # Verifica si el jugador toco al enemigo
         player = self.level.player
         prev_bottom = player.rect.bottom + player.change_y
 
         if player.hit_box.colliderect(self.hit_box):
+            # Si brinco encima, rebota al jugador y golpea al enemigo
             if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
                 player.change_y = (player.jumpSpeed // 2)
                 player.jump(False)
@@ -106,6 +126,8 @@ class Plant(Enemy):
                     self.level.player.hit()
     
     def hit(self):
+        """ Lastima al enemigo
+        """
         self.hurt = True
         self.image_key = "Hit"
         self.idle = False
