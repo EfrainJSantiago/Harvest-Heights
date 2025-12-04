@@ -4,7 +4,7 @@ Harvest Heights is a 2D platformer game project developed to practice and test o
 
 As the name class name implies, the project game was developed fully in python. It was made using free sprites, assets, and sounds on itch.io.
 
-The ZIP package download for this project can be found here: [link](https://github.com/EfrainJSantiago/Harvest-Heights)
+The ZIP package download for this project can be found here: [(https://github.com/EfrainJSantiago/Harvest-Heights)](https://github.com/EfrainJSantiago/Harvest-Heights)
 
 ## How to Run
 Run the main.py file to play the game.
@@ -43,10 +43,10 @@ Run the main.py file to play the game.
 * Level Design
 
 ## Credits
-* SPRITES by Pixel Frog - [link](https://pixelfrog-assets.itch.io/pixel-adventure-1)
-* ENEMIES by Pixel Frog - [link](https://pixelfrog-assets.itch.io/pixel-adventure-2)
-* SOUNDS by Kronbits - [link](https://kronbits.itch.io/freesfx)
-* MUSIC by Tallbeard Studios - [link](https://tallbeard.itch.io/music-loop-bundle)
-* FONTS by Yūki Pixels - [link](https://yukipixels.itch.io/boldpixels)
+* SPRITES by Pixel Frog - [(https://pixelfrog-assets.itch.io/pixel-adventure-1)](https://pixelfrog-assets.itch.io/pixel-adventure-1)
+* ENEMIES by Pixel Frog - [(https://pixelfrog-assets.itch.io/pixel-adventure-2)](https://pixelfrog-assets.itch.io/pixel-adventure-2)
+* SOUNDS by Kronbits - [(https://kronbits.itch.io/freesfx)](https://kronbits.itch.io/freesfx)
+* MUSIC by Tallbeard Studios - [(https://tallbeard.itch.io/music-loop-bundle)](https://tallbeard.itch.io/music-loop-bundle)
+* FONTS by Yūki Pixels - [(https://yukipixels.itch.io/boldpixels)](https://yukipixels.itch.io/boldpixels)
 
-* SPRITE SHEET LOADING and ANIMATION CODE BASIS by freeCodeCamp.org - [link](https://www.youtube.com/watch?v=6gLeplbqtqg)
+* SPRITE SHEET LOADING and ANIMATION CODE BASIS by freeCodeCamp.org - [(https://www.youtube.com/watch?v=6gLeplbqtqg)](https://www.youtube.com/watch?v=6gLeplbqtqg)
