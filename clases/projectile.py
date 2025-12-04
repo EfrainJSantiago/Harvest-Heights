@@ -10,7 +10,7 @@ class Projectile(pygame.sprite.Sprite):
         path = "assets/Enemies/Plant/Bullet.png"
 
         # Crea una instancia del sprite
-        image = pygame.image.load(path).convert()
+        image = pygame.image.load(path).convert_alpha()
         surface = pygame.Surface((16, 16), pygame.SRCALPHA, 32)
         rect = pygame.Rect(0, 0, 16, 16)
         surface.blit(image, (0, 0), rect)

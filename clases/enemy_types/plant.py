@@ -17,7 +17,7 @@ class Plant(Enemy):
         self.hit_box = pygame.Rect(0, 0, 56, 70)
 
         # Variables de ataque
-        self.fire_delay = 60
+        self.fire_delay = 90
         self.fire_tick = 0
         self.attack = False
         self.fire_lock = True
@@ -93,10 +93,10 @@ class Plant(Enemy):
         width = 0
 
         if self.moveSpeed > 0:
-            rect_left = self.screenW
+            rect_left = self.rect.right
 
         if rect_left > 0:
-            width = (rect_left - self.rect.centerx)
+            width = (self.screenW - self.rect.centerx)
         else:
             width = self.screenW - (self.screenW - self.rect.centerx)
         rect = pygame.Rect(rect_left, self.rect.centery, width, 2)
@@ -116,14 +116,8 @@ class Plant(Enemy):
         prev_bottom = player.rect.bottom + player.change_y
 
         if player.hit_box.colliderect(self.hit_box):
-            # Si brinco encima, rebota al jugador y golpea al enemigo
-            if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
-                player.change_y = (player.jumpSpeed // 2)
-                player.jump(False)
-                self.hit()
-            else:
-                if not self.level.player.hurt:
-                    self.level.player.hit()
+            if not self.level.player.hurt:
+                self.level.player.hit()
     
     def hit(self):
         """ Lastima al enemigo

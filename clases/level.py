@@ -66,13 +66,18 @@ class Level:
         """ Resume la musica del nivel.
         """
         if self.level_music != '':
-            pygame.mixer.music.unload()
+            pygame.mixer.music.unpause()
     
     def stop_music(self):
         """ Detiene la musica del nivel.
         """
         if self.level_music != '':
             pygame.mixer.music.stop()
+    
+    def unload_music(self):
+        """ """
+        if self.level_music != '':
+            pygame.mixer.music.unload()
 
     def restartLevel(self):
         """ Reinicia el nivel.
@@ -110,6 +115,10 @@ class Level:
         self.player.rect.y = self.respawn_point[1] - self.player.rect.height
         self.player.falling = True
         self.player.change_y = 0
+
+        # Orienta al jugador en base a su posición de inicio.
+        if self.player.rect.x > (screenW // 2):
+            self.player.facingLeft = True
 
         # Obtiene todos los sprites en la escena
         self.platform_list = self.current_scene.getPlatforms()
@@ -179,7 +188,7 @@ class Level:
             elif len(self.collectables_list) == 0:
                 self.end_point = self.current_scene.getEndPoint()
                 self.end_goal = Checkpoint("End")
-                self.end_goal.rect.x = self.end_point[0] - self.end_goal.rect.width
+                self.end_goal.rect.x = self.end_point[0] #- self.end_goal.rect.width
                 self.end_goal.rect.y = self.end_point[1] - self.end_goal.rect.height
                 self.all_sprites.add(self.end_goal)
                 return False

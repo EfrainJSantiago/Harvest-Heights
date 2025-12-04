@@ -53,7 +53,7 @@ class BlueBird(Enemy):
             return
 
         # Asegura de que el enemigo aparezca al alineado a los bloques si esta desplazado
-        block_hit_list = (pygame.sprite.spritecollide(self, self.level.platform_list, False) + pygame.sprite.spritecollide(self, self.level.semisolid_list, False))
+        block_hit_list = (pygame.sprite.spritecollide(self, self.level.platform_list, False))
 
         for block in block_hit_list:
             if self.rect.bottom >= block.rect.top:
@@ -64,12 +64,6 @@ class BlueBird(Enemy):
                 self.rect.right = block.rect.left
             elif self.rect.left <= block.rect.right:
                 self.rect.left = block.rect.right
-        
-        block_hit_list = (pygame.sprite.spritecollide(self, self.level.semisolid_list, False))
-
-        for block in block_hit_list:
-            if self.rect.bottom >= block.rect.top:
-                self.rect.bottom = block.rect.top
 
         # Explora frente a si mismo para evitar chocar
         probe = self.rect.copy()
@@ -101,7 +95,7 @@ class BlueBird(Enemy):
         if player.hit_box.colliderect(self.hit_box):
             # Si brinco encima, rebota al jugador y golpea al enemigo
             if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
-                player.change_y = (player.jumpSpeed // 2)
+                player.change_y = player.jumpSpeed
                 player.jump(False)
                 self.hit()
             else:

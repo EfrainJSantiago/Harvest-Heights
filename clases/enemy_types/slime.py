@@ -77,16 +77,17 @@ class Slime(Enemy):
                 self.falling = False
                 self.change_y = 0
         
+        platform_hit = False
+        
         # Explora frente a si mismo para evitar chocar
         probe = self.rect.copy()
         if self.moveSpeed > 0:
-            probe.x += 8
+            probe.x += self.rect.width
         else:
-            probe.x -= 8
+            probe.x -= self.rect.width
         
         # Verifica si se bajó de una plataforma
         probe.y += 2
-        platform_hit = False
 
         for platform in self.level.platform_list:
             if probe.colliderect(platform.rect):
@@ -98,10 +99,11 @@ class Slime(Enemy):
                 if probe.colliderect(platform.rect):
                     platform_hit = True
                     break
-
+        
+        if not self.turnLock:
         # Si no encuentra una plataforma, gira al enemigo
-        if not platform_hit:
-            self.turn()
+            if not platform_hit:
+                self.turn()
         
         # Si el enemigo llega al vacio al fondo de la pantalla, cuentalo como golpe
         if self.rect.bottom >= self.screenH and not self.hurt:
@@ -129,7 +131,7 @@ class Slime(Enemy):
         if player.hit_box.colliderect(self.hit_box):
             # Si brinco encima, rebota al jugador y cuentalo como un salto
             if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
-                player.change_y = player.jumpSpeed
+                player.change_y = 20
                 player.jump(False)
             else:
                 if not self.level.player.hurt:

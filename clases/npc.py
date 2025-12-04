@@ -35,6 +35,7 @@ class NPC_IDLE(pygame.sprite.Sprite):
 
         # Prepara la animación de idle
         self.image = self.animation["Idle"][0]
+        self.rect = self.image.get_rect()
 
         # Variables de animación
         self.animation_speed = 3

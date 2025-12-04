@@ -1,1 +1,2 @@
-# Crea el background
+elif timer > 0:
+				# 	timer -= 1

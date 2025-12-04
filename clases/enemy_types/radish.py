@@ -71,7 +71,7 @@ class Radish(Enemy):
             if player.hit_box.colliderect(self.hit_box):
                 # Si brinco encima, rebota al jugador y golpea al enemigo
                 if player.change_y < 0 and player.rect.bottom >= self.hit_box.top and prev_bottom <= self.hit_box.top:
-                    player.change_y = (player.jumpSpeed // 2)
+                    player.change_y = player.jumpSpeed
                     player.jump(False)
                     self.hit()
                 else:

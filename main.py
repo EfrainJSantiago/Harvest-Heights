@@ -7,11 +7,16 @@ from clases.npc import NPC_IDLE
 from clases.fruits import Fruits
 
 # Crear las escenas de los niveles
-import levels.flat as Flat
-import levels.test as Test
-import levels.battlefield as Battlefield
-scenes = [Battlefield.scene1, Test.scene1, Flat.scene1]
-level_music = Flat.music
+import levels.level1 as Level1
+import levels.level2 as Level2
+import levels.level3 as Level3
+
+level1_music = Level1.music
+level2_music = Level2.music
+level3_music = Level3.music
+level1_scenes = [Level1.scene1, Level1.scene2, Level1.scene3, Level1.scene4, Level1.scene5]
+level2_scenes = [Level2.scene1, Level2.scene2, Level2.scene3, Level2.scene4, Level2.scene5]
+level3_scenes = [Level3.scene1, Level3.scene2, Level3.scene3, Level3.scene4, Level3.scene5]
 
 pygame.init()
 
@@ -38,7 +43,9 @@ MAX_LIVES = 3
 current_lives = MAX_LIVES
 
 # Logica de niveles
-levels = [Level(screen, player, scenes, level_music)]
+levels = [Level(screen, player, level1_scenes, level1_music),
+		  Level(screen, player, level2_scenes, level2_music),
+		  Level(screen, player, level3_scenes, level3_music)]
 current_level_no = 0
 current_level = levels[current_level_no]
 player.level = current_level
@@ -83,7 +90,7 @@ pause = pygame.mixer.Sound("sounds/Retro Event StereoUP 02.wav") # or Retro Even
 pygame.mixer.music.load("sounds/music/Troubadeck 28 Quaint Questions.ogg")
 transition.set_volume(0.5)
 pause.set_volume(0.2)
-pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.set_volume(0.7)
 
 # Fondo Principal
 TILES = []
@@ -147,7 +154,7 @@ while True:
 					if paused:
 						pause.play()
 						current_level.pause_music()
-					else:
+					elif not paused:
 						current_level.unpause_music()
 			
 		# Verifica inputs adicionales en caso de game over
@@ -183,13 +190,19 @@ while True:
 	
 	# Si el nivel no esta listo, preparalo
 	if not done:
-
 		# Si no ha completado el ultimo nivel, prepara el proximo
 		if level_complete and current_level_no != len(levels) - 1:
 			current_level.clear()
 			current_level_no += 1
 			current_level = levels[current_level_no]
+
+			player = Player(WINDOWWIDTH, WINDOWHEIGHT, character)
 			player.level = current_level
+			current_level.respawn_player(player)
+
+			lives_lock = False
+			time_out = False
+
 			current_level.startGame(WINDOWWIDTH, WINDOWHEIGHT)
 			level_complete = False
 
@@ -206,7 +219,8 @@ while True:
 				if current_level_no != 0:
 					transition.play()
 			elif timer > 0:
-				timer -= 1
+				if timer <= 180:
+					timer -= 1
 
 				# Dibuja la pantalla de transición
 				draw_background()
@@ -229,6 +243,7 @@ while True:
 			# Si se acabo el tiempo de espera, entra al nivel
 			else:
 				pygame.mixer.music.stop()
+				pygame.mixer.music.unload()
 				current_level.load_music()
 				done = True
 				timer = MAX_TIME
@@ -239,7 +254,7 @@ while True:
 
 		# Si el juego no esta pausado, sigue de costumbre
 		if not paused:
-			if not music_loaded:
+			if not music_loaded and not (game_over or level_complete):
 				current_level.play_music()
 				music_loaded = True
 			current_level.player.action()
@@ -261,7 +276,7 @@ while True:
 					done = False
 					timer = MAX_TIME
 				if music_loaded:
-					current_level.stop_music()
+					pygame.mixer.music.fadeout(500)
 					music_loaded = False
 
 			# Si completo una escena y no es la ultima, pasa a la proxima
@@ -294,7 +309,7 @@ while True:
 					timer = 60
 					tick_down = False
 					if music_loaded:
-						current_level.stop_music()
+						pygame.mixer.music.fadeout(500)
 						music_loaded = False
 
 			# Si se acabo el tiempo, Game Over
@@ -315,6 +330,9 @@ while True:
 										or player.image == player.all_sprites["Hit_left"][0]):
 					pygame.time.wait(1000)
 					freeze_frame = True
+					if music_loaded:
+						pygame.mixer.music.fadeout(500)
+						music_loaded = False
 
 				# Si el jugador murio, Game Over
 				if not player.alive():
@@ -359,7 +377,7 @@ while True:
 		screen.blit(text, [WINDOWWIDTH - 10 - text.get_rect().width, 10])
 
 		# Reduce el tiempo del nivel si el juego no esta pausado
-		if timer > 0 and not paused:
+		if timer > 0 and not paused and not level_complete:
 			timer -= 1
 
 	# Si es game over, entra a la pantalla de Game Over
@@ -425,8 +443,8 @@ while True:
 	elif game_complete:
 		if not music_loaded:
 				pygame.mixer.music.load("sounds/music/Troubadeck 12 Good King.ogg")
-				pygame.mixer.music.set_volume(0.5)
-				pygame.mixer.music.play(-1, fade_ms=2000)
+				pygame.mixer.music.set_volume(0.7)
+				pygame.mixer.music.play(-1, fade_ms=1000)
 				music_loaded = True
 
 		draw_background()

@@ -100,30 +100,31 @@ class Mushroom(Enemy):
                 self.change_y = 0
         
         # Explora frente a si mismo para evitar caer
-        probe = self.rect.copy()
-        if self.moveSpeed > 0:
-            probe.x += self.rect.width
-        else:
-            probe.x -= self.rect.width
-        
-        # Verifica si se bajó de una plataforma
-        probe.y += 2
-        platform_hit = False
+        if not self.turnLock:
+            probe = self.rect.copy()
+            if self.moveSpeed > 0:
+                probe.x += self.rect.width
+            else:
+                probe.x -= self.rect.width
+            
+            # Verifica si se bajó de una plataforma
+            probe.y += 2
+            platform_hit = False
 
-        for platform in self.level.platform_list:
-            if probe.colliderect(platform.rect):
-                platform_hit = True
-                break
-
-        if not platform_hit:
-            for platform in self.level.semisolid_list:
+            for platform in self.level.platform_list:
                 if probe.colliderect(platform.rect):
                     platform_hit = True
                     break
 
-        # Si no encuentra una plataforma, gira al enemigo
-        if not platform_hit:
-            self.turn()
+            if not platform_hit:
+                for platform in self.level.semisolid_list:
+                    if probe.colliderect(platform.rect):
+                        platform_hit = True
+                        break
+
+            # Si no encuentra una plataforma, gira al enemigo
+            if not platform_hit:
+                self.turn()
         
         # Si el enemigo llega al vacio al fondo de la pantalla, cuentalo como golpe
         if self.rect.bottom >= self.screenH and not self.hurt:

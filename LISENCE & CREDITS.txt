@@ -23,4 +23,6 @@ MUSIC by Tallbeard Studios - (https://tallbeard.itch.io/music-loop-bundle)
 
 FONTS by Yūki Pixels - (https://yukipixels.itch.io/boldpixels)
 
+SPRITE SHEET LOADING and ANIMATION CODE BASIS by freeCodeCamp.org - (https://www.youtube.com/watch?v=6gLeplbqtqg)
+
 LICENSE & CREDITS LAYOUT by Brackeys

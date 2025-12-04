@@ -78,7 +78,7 @@ scene1 = {
                       2: "Bananas",
                       3: "Orange",
                       4: "Strawberry",},
-    'start': None,
-    'checkpoint': (32, 384),
-    'end': None,
+    'start': (0, 0),
+    'checkpoint': (0, 0),
+    'end': (0, 0),
 }

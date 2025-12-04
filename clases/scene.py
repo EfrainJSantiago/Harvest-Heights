@@ -179,7 +179,7 @@ class Scene:
                 pos_x = col * self.tile_size
                 pos_y = row * self.tile_size
 
-                if pos_x < width // 2:
+                if pos_x < (screenW // 2) - self.tile_size:
                     enemy.moveSpeed = abs(enemy.moveSpeed)
                 else:
                     enemy.moveSpeed = -abs(enemy.moveSpeed)
