@@ -2,9 +2,9 @@
 
 Harvest Heights is a 2D platformer game project developed to practice and test our game development skills. The game was made for the class CCOM 4440: Python (Introduction to Videogames) at the University of Puerto Rico at Arecibo.
 
-As the name class name implies, the project game was developed fully in python. It was made using free sprites, assets, and sounds on itch.io.
+As the class name implies, the project game was developed fully in python. It was made using free sprites, assets, and sounds on itch.io.
 
-The ZIP package download for this project can be found here: [(https://github.com/EfrainJSantiago/Harvest-Heights)](https://github.com/EfrainJSantiago/Harvest-Heights)
+The ZIP package download for this project can be found here: [https://github.com/EfrainJSantiago/Harvest-Heights](https://github.com/EfrainJSantiago/Harvest-Heights)
 
 ## How to Run
 Run the main.py file to play the game.
