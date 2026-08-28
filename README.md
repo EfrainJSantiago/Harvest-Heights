@@ -25,7 +25,7 @@ Run the main.py file to play the game.
 * Project Idea and Proposal
 * Player and Enemy Movement
 * Start Screen
-* Motivator (without him, the other contributor would have lazed around and done nothing)
+* Motivator
 * Decision Making
 * Pause State and Menu
 * Level Design
